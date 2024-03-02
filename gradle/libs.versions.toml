@@ -1,9 +1,9 @@
 [versions]
 junit = "5.9.1"
-mdcfg = "2.1.0-SNAPSHOT"
-mdlib = "1.4.0-SNAPSHOT"
-mcore = "2.0.0-SNAPSHOT"
-mdp = "0.2.0-SNAPSHOT"
+mdcfg = "2.1.0"
+mdlib = "1.6.0"
+mcore = "2.0.0-pre6"
+mdp = "0.2.0"
 slf4j = "2.0.11"
 jbr-anno = "24.0.1"
 jwt = "4.4.0"
