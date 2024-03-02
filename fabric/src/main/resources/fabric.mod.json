@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "org.wallentines.serverswitcher.Init"
+    ],
+    "client": [
+    ]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "midnightcore": "*"
+  },
+  "mixins": [
+    "serverswitcher.mixins.json"
+  ],
+  "name": "ServerSwitcher",
+  "description": "A mod which adds a /server command for use with transfer packets",
+  "contact": {
+    "homepage": ""
+  },
+  "authors": [
+    {
+      "name": "M1dnight_Ninja"
+    }
+  ],
+  "license": "LGPL"
+}

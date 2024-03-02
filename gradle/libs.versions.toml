@@ -1,0 +1,39 @@
+[versions]
+junit = "5.9.1"
+mdcfg = "2.1.0-SNAPSHOT"
+mdlib = "1.4.0-SNAPSHOT"
+mcore = "2.0.0-SNAPSHOT"
+mdp = "0.2.0-SNAPSHOT"
+slf4j = "2.0.11"
+jbr-anno = "24.0.1"
+jwt = "4.4.0"
+
+shadow = "8.1.1"
+loom = "1.5-SNAPSHOT"
+multiversion = "0.2.1"
+patch = "0.2.0"
+
+[libraries]
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+midnight-cfg = { module = "org.wallentines:midnightcfg-api", version.ref="mdcfg" }
+midnight-cfg-json = { module = "org.wallentines:midnightcfg-codec-json", version.ref="mdcfg" }
+midnight-cfg-gson = { module = "org.wallentines:midnightcfg-codec-gson", version.ref="mdcfg" }
+midnight-cfg-binary = { module = "org.wallentines:midnightcfg-codec-binary", version.ref="mdcfg" }
+midnight-lib = { module = "org.wallentines:midnightlib", version.ref="mdlib" }
+midnight-core = { module = "org.wallentines:midnightcore-common", version.ref="mcore" }
+midnight-core-server = { module = "org.wallentines:midnightcore-server", version.ref="mcore" }
+midnight-core-spigot = { module = "org.wallentines:midnightcore-spigot", version.ref="mcore" }
+midnight-core-fabric = { module = "org.wallentines:midnightcore-fabric", version.ref="mcore" }
+midnight-proxy = { module = "org.wallentines:midnightproxy-api", version.ref="mdp" }
+midnight-proxy-jwt = { module = "org.wallentines:midnightproxy-api-jwt", version.ref="mdp" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref="jbr-anno" }
+auth0-jwt = { module = "com.auth0:java-jwt", version.ref="jwt" }
+
+[plugins]
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+loom = { id = "fabric-loom", version.ref = "loom" }
+multiversion = { id = "org.wallentines.gradle-multi-version", version.ref="multiversion" }
+patch = { id = "org.wallentines.gradle-patch", version.ref="patch" }
