@@ -1,15 +1,15 @@
 [versions]
 junit = "5.9.1"
-mdcfg = "2.1.0"
+mdcfg = "2.3.0-SNAPSHOT"
 mdlib = "1.6.0"
-mcore = "2.0.0-pre6"
+mcore = "2.0.0-SNAPSHOT"
 mdp = "0.2.0"
 slf4j = "2.0.11"
 jbr-anno = "24.0.1"
 jwt = "4.4.0"
 
 shadow = "8.1.1"
-loom = "1.5-SNAPSHOT"
+loom = "1.6-SNAPSHOT"
 multiversion = "0.2.1"
 patch = "0.2.0"
 
@@ -17,6 +17,7 @@ patch = "0.2.0"
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 midnight-cfg = { module = "org.wallentines:midnightcfg-api", version.ref="mdcfg" }
+midnight-cfg-sql = { module = "org.wallentines:midnightcfg-api-sql", version.ref="mdcfg" }
 midnight-cfg-json = { module = "org.wallentines:midnightcfg-codec-json", version.ref="mdcfg" }
 midnight-cfg-gson = { module = "org.wallentines:midnightcfg-codec-gson", version.ref="mdcfg" }
 midnight-cfg-binary = { module = "org.wallentines:midnightcfg-codec-binary", version.ref="mdcfg" }

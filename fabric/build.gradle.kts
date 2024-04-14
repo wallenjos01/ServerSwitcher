@@ -70,11 +70,11 @@ dependencies {
     shadow(project(":common").setTransitive(false))
 
     // Minecraft
-    minecraft("com.mojang:minecraft:24w05b")
+    minecraft("com.mojang:minecraft:1.20.5-pre1")
     mappings(loom.officialMojangMappings())
 
     // Fabric Loader
-    modImplementation("net.fabricmc:fabric-loader:0.15.6")
+    modImplementation("net.fabricmc:fabric-loader:0.15.9")
 
     // MidnightCore
     modApi(libs.midnight.core.fabric)
@@ -89,7 +89,7 @@ tasks.withType<ProcessResources>() {
     filesMatching("fabric.mod.json") {
         expand(mapOf(
                 Pair("version", project.version as String),
-                Pair("id", project.properties["id"] as String))
+                Pair("id", rootProject.name))
         )
     }
 }

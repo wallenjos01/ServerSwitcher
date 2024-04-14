@@ -31,12 +31,14 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     private final FileWrapper<ConfigObject> config;
     private final KeyStore keyStore;
     private String serverName;
+    private String namespace;
     private PublicKey key;
     private boolean clearReconnect;
     private int jwtTimeout;
 
     private static final ConfigSection DEFAULT_CONFIG = new ConfigSection()
             .with("server", "lobby")
+            .with("namespace", "default")
             .with("servers", new ConfigSection())
             .with("clear_reconnect_cookie", true)
             .with("jwt_expire_sec", 5);
@@ -66,6 +68,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         ConfigSection sec = config.getRoot().asSection();
 
         this.serverName = sec.getString("server");
+        this.namespace = sec.getString("namespace");
 
         serverRegistry.clear();
         ConfigSection servers = sec.getSection("servers");
