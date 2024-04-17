@@ -1,6 +1,10 @@
 package org.wallentines.serverswitcher;
 
 import org.jetbrains.annotations.Nullable;
+import org.wallentines.mdcfg.sql.Column;
+import org.wallentines.mdcfg.sql.Constraint;
+import org.wallentines.mdcfg.sql.DataType;
+import org.wallentines.mdcfg.sql.TableSchema;
 import org.wallentines.midnightlib.registry.Identifier;
 import org.wallentines.midnightlib.registry.RegistryBase;
 import org.wallentines.midnightlib.types.ResettableSingleton;
@@ -19,6 +23,24 @@ public abstract class ServerSwitcherAPI {
 
     public abstract void reload();
 
+    public abstract void sync();
+
     public abstract String getServerName();
+
+    public static final Integer SCHEMA_VERSION = 1;
+
+    public static final TableSchema META_SCHEMA = TableSchema.builder()
+            .withColumn("schema", DataType.INTEGER)
+            .build();
+
+    public static final TableSchema SERVER_INFO_SCHEMA = TableSchema.builder()
+            .withColumn(Column.builder("id", DataType.INTEGER).withConstraint(Constraint.PRIMARY_KEY).withConstraint(Constraint.AUTO_INCREMENT))
+            .withColumn(Column.builder("name", DataType.VARCHAR(126)).withConstraint(Constraint.NOT_NULL))
+            .withColumn("hostname", DataType.VARCHAR(126))
+            .withColumn("port", DataType.INTEGER)
+            .withColumn("proxy_backend", DataType.VARCHAR(126))
+            .withColumn("permission", DataType.VARCHAR(126))
+            .withColumn("namespace", DataType.VARCHAR(126))
+            .build();
 
 }
