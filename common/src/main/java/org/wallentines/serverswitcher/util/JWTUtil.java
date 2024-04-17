@@ -4,7 +4,6 @@ import org.wallentines.mdcfg.serializer.Serializer;
 import org.wallentines.mdproxy.jwt.CryptCodec;
 import org.wallentines.mdproxy.jwt.JWTBuilder;
 import org.wallentines.mdproxy.jwt.KeyCodec;
-import org.wallentines.midnightlib.registry.Identifier;
 
 import java.security.PublicKey;
 import java.util.Objects;

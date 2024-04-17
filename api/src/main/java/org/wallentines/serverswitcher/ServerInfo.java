@@ -10,7 +10,7 @@ public record ServerInfo(String hostname, Integer port, String proxyBackend, Str
             Serializer.INT.entry("port", ServerInfo::port).optional(),
             Serializer.STRING.entry("proxy_backend", ServerInfo::proxyBackend).optional(),
             Serializer.STRING.entry("permission", ServerInfo::proxyBackend).optional(),
-            Serializer.STRING.entry("namespace", ServerInfo::namespace).optional(),
+            Serializer.STRING.entry("namespace", ServerInfo::namespace).orElse("default"),
             ServerInfo::new
     );
 

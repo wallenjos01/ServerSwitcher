@@ -1,6 +1,7 @@
 package org.wallentines.serverswitcher;
 
 import org.jetbrains.annotations.Nullable;
+import org.wallentines.mcore.lang.LangManager;
 import org.wallentines.mdcfg.sql.Column;
 import org.wallentines.mdcfg.sql.Constraint;
 import org.wallentines.mdcfg.sql.DataType;
@@ -8,6 +9,8 @@ import org.wallentines.mdcfg.sql.TableSchema;
 import org.wallentines.midnightlib.registry.Identifier;
 import org.wallentines.midnightlib.registry.RegistryBase;
 import org.wallentines.midnightlib.types.ResettableSingleton;
+
+import java.util.concurrent.CompletableFuture;
 
 public abstract class ServerSwitcherAPI {
 
@@ -21,11 +24,15 @@ public abstract class ServerSwitcherAPI {
 
     public abstract RegistryBase<String, ServerInfo> getServerRegistry();
 
-    public abstract void reload();
-
-    public abstract void sync();
-
     public abstract String getServerName();
+
+    public abstract CompletableFuture<StatusCode> reload();
+    public abstract CompletableFuture<StatusCode> sync();
+    public abstract CompletableFuture<StatusCode> registerServer(String server, ServerInfo info);
+    public abstract CompletableFuture<StatusCode> updateServer(String server, ServerInfo info);
+    public abstract CompletableFuture<StatusCode> removeServer(String server);
+
+    public abstract LangManager getLangManager();
 
     public static final Integer SCHEMA_VERSION = 1;
 
