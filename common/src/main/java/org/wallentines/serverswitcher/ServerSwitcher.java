@@ -299,8 +299,8 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         return key;
     }
 
-    public static void init(File configFolder) {
-        INSTANCE.set(new ServerSwitcher(configFolder));
+    public static void init(File configFolder, LangRegistry registry) {
+        INSTANCE.set(new ServerSwitcher(configFolder, registry));
     }
 
     public static void shutdown() {

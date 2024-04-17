@@ -2,9 +2,12 @@ plugins {
     id("mod-build")
     id("mod-publish")
     alias(libs.plugins.loom)
-    alias(libs.plugins.shadow)
 }
 
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+}
 
 loom {
     runs {
@@ -21,32 +24,26 @@ loom {
     }
 
     mixin {
-
         add(sourceSets.main.name, "${rootProject.name}-refmap.json")
     }
 
 }
 
-
 tasks {
     build {
-        dependsOn(shadowJar)
+        dependsOn(remapJar)
     }
-    shadowJar {
+    jar {
         archiveClassifier.set("dev")
-        configurations = listOf(project.configurations.shadow.get())
-        minimize {
-            exclude("org.wallentines.*")
-        }
     }
     remapJar {
-        dependsOn(shadowJar)
-        inputFile.set(shadowJar.get().archiveFile)
-
-        val id = project.properties["id"]
+        archiveClassifier.set("")
+        val id = rootProject.name
         archiveBaseName.set("${id}-${project.name}")
+        inputFile.set(jar.get().archiveFile)
     }
 }
+
 
 
 repositories {
@@ -66,8 +63,8 @@ dependencies {
     api(project(":api"))
     api(project(":common"))
 
-    shadow(project(":api").setTransitive(false))
-    shadow(project(":common").setTransitive(false))
+    include(project(":api").setTransitive(false))
+    include(project(":common").setTransitive(false))
 
     // Minecraft
     minecraft("com.mojang:minecraft:1.20.5-pre1")

@@ -4,7 +4,12 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import org.wallentines.mcore.Server;
+import org.wallentines.mcore.lang.LangRegistry;
+import org.wallentines.mcore.lang.PlaceholderManager;
 import org.wallentines.mcore.util.ConversionUtil;
+import org.wallentines.mdcfg.codec.JSONCodec;
+
+import java.io.IOException;
 
 public class Init implements ModInitializer {
 
@@ -12,7 +17,14 @@ public class Init implements ModInitializer {
     public void onInitialize() {
 
         Server.START_EVENT.register(this, ev -> {
-            ServerSwitcher.init(ev.getConfigDirectory().resolve("ServerSwitcher").toFile());
+
+            try {
+                LangRegistry reg = LangRegistry.fromConfig(JSONCodec.loadConfig(getClass().getResourceAsStream("/serverswitcher/en_us.json")).asSection(), PlaceholderManager.INSTANCE);
+                ServerSwitcher.init(ev.getConfigDirectory().resolve("ServerSwitcher").toFile(), reg);
+            } catch (IOException e) {
+                throw new IllegalStateException("Unable to find lang defaults in the mod jar!", e);
+            }
+
         });
 
         Server.STOP_EVENT.register(this, ev -> {

@@ -74,7 +74,7 @@ public class ServerSwitcherCommand {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.add", CustomPlaceholder.inline("server", server))), true);
             } else {
-                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
+                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
             }
         });
 
@@ -96,7 +96,7 @@ public class ServerSwitcherCommand {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.update", CustomPlaceholder.inline("server", server))), true);
             } else {
-                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
+                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
             }
 
         });
@@ -117,7 +117,7 @@ public class ServerSwitcherCommand {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.remove", CustomPlaceholder.inline("server", server))), true);
             } else {
-                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
+                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
             }
         });
 
@@ -136,7 +136,7 @@ public class ServerSwitcherCommand {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.sync")), true);
             } else {
-                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
+                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
             }
         });
 
@@ -155,7 +155,7 @@ public class ServerSwitcherCommand {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.reload")), true);
             } else {
-                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
+                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
             }
         });
 
