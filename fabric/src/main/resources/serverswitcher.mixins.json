@@ -4,7 +4,6 @@
   "package": "org.wallentines.serverswitcher.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "AccessorCommandContext",
     "AccessorPacketListener",
     "MixinConnection",
     "MixinHandshakeListener"

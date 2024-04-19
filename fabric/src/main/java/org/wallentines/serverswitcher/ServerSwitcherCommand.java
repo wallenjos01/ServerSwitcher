@@ -12,9 +12,9 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import org.wallentines.brigpatch.mixin.AccessorCommandContext;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.text.WrappedComponent;
-import org.wallentines.serverswitcher.mixin.AccessorCommandContext;
 
 import java.util.Map;
 
