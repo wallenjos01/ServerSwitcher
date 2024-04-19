@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import org.wallentines.brigpatch.mixin.AccessorCommandContext;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.text.WrappedComponent;
+import org.wallentines.midnightlib.registry.Identifier;
 
 import java.util.Map;
 
@@ -61,11 +62,11 @@ public class ServerSwitcherCommand {
 
     private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect) {
         return builder
-            .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.word()).redirect(redirect)))
+            .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.string()).redirect(redirect)))
             .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).redirect(redirect)))
-            .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.word()).redirect(redirect)))
+            .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.string()).redirect(redirect)))
             .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(redirect)))
-            .then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.word()).redirect(redirect)));
+            .then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.string()).redirect(redirect)));
     }
 
 
@@ -81,11 +82,11 @@ public class ServerSwitcherCommand {
         ServerInfo inf = readServerInfo(ctx);
 
         if(inf.hostname() == null && inf.proxyBackend() == null) {
-            ctx.getSource().sendFailure(Component.literal("Server must have hostname or backend!"));
+            ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component("error.not_enough_info")));
             return 0;
         }
 
-        api.registerServer(server, inf).thenAccept(res -> {
+        api.registerServer(Identifier.parseOrDefault(server, api.getNamespace()), inf).thenAccept(res -> {
 
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.add", CustomPlaceholder.inline("server", server))), true);
@@ -108,9 +109,9 @@ public class ServerSwitcherCommand {
         String server = ctx.getArgument("server", String.class);
         ServerInfo inf = readServerInfo(ctx);
 
-        api.updateServer(server, inf).thenAccept(res -> {
+        api.updateServer(Identifier.parseOrDefault(server, api.getNamespace()), inf).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
-                ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.update", CustomPlaceholder.inline("server", server))), true);
+                ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.edit", CustomPlaceholder.inline("server", server))), true);
             } else {
                 ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
             }
@@ -129,7 +130,7 @@ public class ServerSwitcherCommand {
 
         String server = ctx.getArgument("server", String.class);
 
-        api.removeServer(server).thenAccept(res -> {
+        api.removeServer(Identifier.parseOrDefault(server, api.getNamespace())).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.remove", CustomPlaceholder.inline("server", server))), true);
             } else {
@@ -205,9 +206,6 @@ public class ServerSwitcherCommand {
             namespace = ctx.getArgument("namespace", String.class);
         }
 
-        ServerInfo out = new ServerInfo(host, port, backend, permission, namespace);
-        ServerSwitcherAPI.LOGGER.warn("Read server: " + out);
-
-        return out;
+        return new ServerInfo(host, port, backend, permission, namespace);
     }
 }

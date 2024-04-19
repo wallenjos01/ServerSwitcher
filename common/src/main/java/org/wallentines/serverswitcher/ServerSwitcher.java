@@ -1,7 +1,5 @@
 package org.wallentines.serverswitcher;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.wallentines.mcore.MidnightCoreAPI;
 import org.wallentines.mcore.Server;
 import org.wallentines.mcore.ServerModule;
@@ -26,6 +24,8 @@ import org.wallentines.midnightlib.registry.StringRegistry;
 
 import java.io.File;
 import java.security.PublicKey;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class ServerSwitcher extends ServerSwitcherAPI {
@@ -33,6 +33,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
     public static final Identifier RECONNECT_COOKIE = new Identifier("mdp", "rc");
     private final RegistryBase<String, ServerInfo> serverRegistry;
+    private final Set<Identifier> allServers;
     private final FileWrapper<ConfigObject> config;
     private final KeyStore keyStore;
     private final LangManager langManager;
@@ -69,6 +70,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         }
 
         this.serverRegistry = new StringRegistry<>();
+        this.allServers = new HashSet<>();
         this.langManager = new LangManager(defaults, langDir);
 
         reload();
@@ -76,6 +78,8 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
     @Override
     public CompletableFuture<StatusCode> reload() {
+
+        this.langManager.reload();
 
         this.config.load();
         ConfigSection sec = getConfig();
@@ -110,7 +114,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     }
 
     @Override
-    public CompletableFuture<StatusCode> registerServer(String server, ServerInfo info) {
+    public CompletableFuture<StatusCode> registerServer(Identifier server, ServerInfo info) {
 
         return connectDatabase().thenApply(conn -> {
 
@@ -120,19 +124,19 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
             try {
                 sync(conn);
-                if (serverRegistry.contains(server)) {
+                if (allServers.contains(server)) {
                     LOGGER.error("Unable to register server " + server + "! A server with that name already exists!");
                     return StatusCode.SERVER_EXISTS;
                 }
 
-                if (conn.insert("servers", ServerInfo.SERIALIZER.serialize(ConfigContext.INSTANCE, info).getOrThrow().asSection().with("name", server))
+                if (conn.insert("servers", ServerInfo.SERIALIZER.serialize(ConfigContext.INSTANCE, info).getOrThrow().asSection().with("name", server.getPath()))
                         .execute()[0] != 1) {
 
                     LOGGER.error("Unable to register server " + server + "!");
                     return StatusCode.INSERT_FAILED;
                 }
 
-                serverRegistry.register(server, info);
+                serverRegistry.register(server.getPath(), info);
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -144,7 +148,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     }
 
     @Override
-    public CompletableFuture<StatusCode> updateServer(String server, ServerInfo info) {
+    public CompletableFuture<StatusCode> updateServer(Identifier server, ServerInfo info) {
 
         return connectDatabase().thenApply(conn -> {
 
@@ -154,21 +158,22 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
             try {
                 sync(conn);
-                if (!serverRegistry.contains(server)) {
+                if(!allServers.contains(server)) {
                     LOGGER.error("Unable to update server " + server + "! No server with that name exists!");
                     return StatusCode.SERVER_NOT_EXISTS;
                 }
 
                 if (conn.update("servers")
                         .withRow(ServerInfo.SERIALIZER.serialize(ConfigContext.INSTANCE, info).getOrThrow().asSection())
+                        .where(Condition.equals("name", DataType.VARCHAR.create(server.getPath())).and(Condition.equals("namespace", DataType.VARCHAR.create(server.getNamespace()))))
                         .execute()[0] != 1) {
 
                     LOGGER.error("Unable to update server " + server + "!");
                     return StatusCode.UPDATE_FAILED;
                 }
 
-                serverRegistry.remove(server);
-                if(info.namespace().equals(namespace)) serverRegistry.register(server, info);
+                if(server.getNamespace().equals(namespace)) serverRegistry.remove(server.getPath());
+                if(info.namespace().equals(namespace)) serverRegistry.register(server.getPath(), info);
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -179,7 +184,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     }
 
     @Override
-    public CompletableFuture<StatusCode> removeServer(String server) {
+    public CompletableFuture<StatusCode> removeServer(Identifier server) {
 
         return connectDatabase().thenApply(conn -> {
 
@@ -189,20 +194,21 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
             try {
                 sync(conn);
-                if (!serverRegistry.contains(server)) {
-                    LOGGER.error("Unable to update server " + server + "! No server with that name exists!");
+                if(!allServers.contains(server)) {
+                    LOGGER.error("Unable to remove server " + server + "! No server with that name exists!");
                     return StatusCode.SERVER_NOT_EXISTS;
                 }
 
+
                 if (conn.delete("servers")
-                        .where(Condition.equals("name", DataType.VARCHAR.create(server)).and(Condition.equals("namespace", DataType.VARCHAR.create(namespace))))
+                        .where(Condition.equals("name", DataType.VARCHAR.create(server.getPath())).and(Condition.equals("namespace", DataType.VARCHAR.create(server.getNamespace()))))
                         .execute()[0] != 1) {
 
-                    LOGGER.error("Unable to delete server " + server + "!");
+                    LOGGER.error("Unable to remove server " + server + "!");
                     return StatusCode.DELETE_FAILED;
                 }
 
-                serverRegistry.remove(server);
+                if(server.getNamespace().equals(namespace)) serverRegistry.remove(server.getPath());
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -229,7 +235,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         try {
             res = connection.select("servers").where(Condition.equals("namespace", DataType.VARCHAR.create(namespace))).execute();
         } catch (Throwable th) {
-            LOGGER.error("An exception occurred while syncing with the database a server!");
+            LOGGER.error("An exception occurred while syncing with the database!", th);
             return StatusCode.UNKNOWN_ERROR;
         }
 
@@ -254,6 +260,19 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
         if(requiresKey && key == null) {
             LOGGER.warn("There is no public key available in the data folder, but MidnightProxy backend switching was requested! Please put an RSA public key generated by your MidnightProxy server in the data folder in a file called key.pub");
+        }
+
+        // Get all server names
+        try {
+            res = connection.select("servers").withColumn("name").withColumn("namespace").execute();
+        } catch (Throwable th) {
+            LOGGER.error("An exception occurred while syncing with the database!", th);
+            return StatusCode.UNKNOWN_ERROR;
+        }
+
+        allServers.clear();
+        for(int i = 0 ; i < res.rows() ; i++) {
+            allServers.add(new Identifier(res.get(i).getValue(0, DataType.VARCHAR), res.get(i).getValue(1, DataType.VARCHAR)));
         }
 
         return StatusCode.SUCCESS;

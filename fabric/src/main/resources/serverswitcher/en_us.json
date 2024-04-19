@@ -1,3 +1,15 @@
 {
-
+  "error.not_enough_info": "Server must have hostname or backend!",
+  "error.db_connect_failed": "Unable to connect to the database!",
+  "error.server_exists": "A server with that name already exists!",
+  "error.server_not_exists": "No server with that name exists",
+  "error.insert_failed": "Unable to register server!",
+  "error.update_failed": "Unable to update server!",
+  "error.delete_failed": "Unable to delete server!",
+  "error.unknown_error": "An unknown error occurred! Check the console for additional information!",
+  "command.add": "Added server %server%",
+  "command.edit": "Updated server %server%",
+  "command.remove": "Removed server %server%",
+  "command.sync": "Synchronized with database",
+  "command.reload": "ServerSwitcher reloaded"
 }
