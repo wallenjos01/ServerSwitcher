@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -30,18 +31,20 @@ public class ServerCommand {
         dispatcher.register(Commands.literal("server")
                 .requires(Permissions.require("serverswitcher.server", 3))
                 .then(Commands.argument("server", StringArgumentType.word())
-                        .suggests((ctx, builder) -> {
-                            ServerSwitcherAPI sw = ServerSwitcher.getInstance();
-                            return SharedSuggestionProvider.suggest(sw.getServerRegistry().getIds().stream().filter(id -> {
-                                if(id.equals(sw.getServerName())) return false;
-                                ServerInfo inf = sw.getServerRegistry().get(id);
-                                return inf.permission() == null || Permissions.check(ctx.getSource(), inf.permission(), 3);
-                            }), builder);
-                        })
+                        .suggests(SUGGEST_SERVERS)
                         .executes(ServerCommand::execute)
                 )
         );
     }
+
+    public static final SuggestionProvider<CommandSourceStack> SUGGEST_SERVERS = (ctx, builder) -> {
+        ServerSwitcherAPI sw = ServerSwitcher.getInstance();
+        return SharedSuggestionProvider.suggest(sw.getServerRegistry().getIds().stream().filter(id -> {
+            if(id.equals(sw.getServerName())) return false;
+            ServerInfo inf = sw.getServerRegistry().get(id);
+            return inf.permission() == null || Permissions.check(ctx.getSource(), inf.permission(), 3);
+        }), builder);
+    };
 
     private static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 

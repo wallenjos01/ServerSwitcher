@@ -168,7 +168,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                 }
 
                 serverRegistry.remove(server);
-                serverRegistry.register(server, info);
+                if(info.namespace().equals(namespace)) serverRegistry.register(server, info);
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
