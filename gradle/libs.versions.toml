@@ -3,10 +3,9 @@ junit = "5.9.1"
 mdcfg = "2.3.0-SNAPSHOT"
 mdlib = "1.6.0"
 mcore = "2.0.0-SNAPSHOT"
-mdp = "0.2.0"
+mdp = "0.3.0"
 slf4j = "2.0.11"
 jbr-anno = "24.0.1"
-jwt = "4.4.0"
 
 shadow = "8.1.1"
 loom = "1.6-SNAPSHOT"
@@ -31,7 +30,6 @@ midnight-proxy-jwt = { module = "org.wallentines:midnightproxy-api-jwt", version
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref="jbr-anno" }
-auth0-jwt = { module = "com.auth0:java-jwt", version.ref="jwt" }
 
 [plugins]
 shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }

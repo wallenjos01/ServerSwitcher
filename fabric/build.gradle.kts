@@ -55,14 +55,15 @@ dependencies {
     include(project(":common").setTransitive(false))
 
     // Minecraft
-    minecraft("com.mojang:minecraft:1.20.5-pre1")
+    minecraft("com.mojang:minecraft:1.20.5-rc2")
     mappings(loom.officialMojangMappings())
 
     // Fabric Loader
-    modImplementation("net.fabricmc:fabric-loader:0.15.9")
+    modImplementation("net.fabricmc:fabric-loader:0.15.10")
 
     // MidnightCore
     modApi(libs.midnight.core.fabric)
+    modApi(include("org.wallentines:brigadier-argument-fix:1.0.0")!!)
 
     // JWT
     modApi(libs.midnight.proxy.jwt)

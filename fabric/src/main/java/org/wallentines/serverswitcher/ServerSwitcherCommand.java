@@ -3,51 +3,42 @@ package org.wallentines.serverswitcher;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.ParsedArgument;
 import com.mojang.brigadier.tree.CommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.PlayerChatMessage;
-import org.jetbrains.annotations.Nullable;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.text.WrappedComponent;
+import org.wallentines.serverswitcher.mixin.AccessorCommandContext;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class ServerSwitcherCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
-        CommandNode<CommandSourceStack> add = dispatcher.register(Commands.literal("svs")
+        LiteralArgumentBuilder<CommandSourceStack> add = Commands.literal("svs")
                 .requires(Permissions.require("serverswitcher.admin", 4))
-                .then(Commands.literal("add"))
-        ).getChild("add");
+                .then(Commands.literal("add"));
 
-        CommandNode<CommandSourceStack> edit = dispatcher.register(Commands.literal("svs")
+
+        LiteralArgumentBuilder<CommandSourceStack> edit = Commands.literal("svs")
                 .requires(Permissions.require("serverswitcher.admin", 4))
-                .then(Commands.literal("edit"))
-        ).getChild("edit");
+                .then(Commands.literal("edit"));
+
+
         dispatcher.register(Commands.literal("svs")
             .requires(Permissions.require("serverswitcher.admin", 4))
-            .then(Commands.literal("add")
-                .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.word()).redirect(add, ctx -> WrappedContext.preserveArgument(ctx, "host", String.class))))
-                .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).redirect(add, ctx -> WrappedContext.preserveArgument(ctx, "port", Integer.class))))
-                .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.word()).redirect(add, ctx -> WrappedContext.preserveArgument(ctx, "backend", String.class))))
-                .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(add, ctx -> WrappedContext.preserveArgument(ctx, "permission", String.class))))
-                .then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.word()).redirect(add, ctx -> WrappedContext.preserveArgument(ctx, "namespace", String.class))))
+            .then(addFlags(Commands.literal("add"), dispatcher.register(add).getChild("add"))
                 .then(Commands.argument("server", StringArgumentType.word())
                     .executes(ServerSwitcherCommand::executeAdd)
                 )
             )
-            .then(Commands.literal("edit")
-                .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.word()).redirect(edit, ctx -> WrappedContext.preserveArgument(ctx, "host", String.class))))
-                .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).redirect(edit, ctx -> WrappedContext.preserveArgument(ctx, "port", Integer.class))))
-                .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.word()).redirect(edit, ctx -> WrappedContext.preserveArgument(ctx, "backend", String.class))))
-                .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(edit, ctx -> WrappedContext.preserveArgument(ctx, "permission", String.class))))
-                .then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.word()).redirect(edit, ctx -> WrappedContext.preserveArgument(ctx, "namespace", String.class))))
+            .then(addFlags(Commands.literal("edit"), dispatcher.register(edit).getChild("edit"))
                 .then(Commands.argument("server", StringArgumentType.word())
                     .suggests(ServerCommand.SUGGEST_SERVERS)
                     .executes(ServerSwitcherCommand::executeEdit)
@@ -67,6 +58,16 @@ public class ServerSwitcherCommand {
             )
         );
     }
+
+    private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect) {
+        return builder
+            .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.word()).redirect(redirect)))
+            .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).redirect(redirect)))
+            .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.word()).redirect(redirect)))
+            .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(redirect)))
+            .then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.word()).redirect(redirect)));
+    }
+
 
     private static int executeAdd(CommandContext<CommandSourceStack> ctx) {
 
@@ -178,6 +179,7 @@ public class ServerSwitcherCommand {
     }
 
 
+    @SuppressWarnings("unchecked")
     private static ServerInfo readServerInfo(CommandContext<CommandSourceStack> ctx) {
         String host = null;
         Integer port = null;
@@ -185,23 +187,22 @@ public class ServerSwitcherCommand {
         String permission = null;
         String namespace = null;
 
-        CommandSourceStack stack = ctx.getSource();
-        WrappedContext arg = (WrappedContext) stack.getSigningContext();
+        Map<String, ParsedArgument<CommandSourceStack, ?>> args = ((AccessorCommandContext<CommandSourceStack>) ctx).getArguments();
 
-        if(arg.arguments.containsKey("host")) {
-            host = (String) arg.arguments.get("host");
+        if(args.containsKey("host")) {
+            host = ctx.getArgument("host", String.class);
         }
-        if(arg.arguments.containsKey("port")) {
-            port = (int) arg.arguments.get("port");
+        if(args.containsKey("port")) {
+            port = ctx.getArgument("port", Integer.class);
         }
-        if(arg.arguments.containsKey("backend")) {
-            backend = (String) arg.arguments.get("backend");
+        if(args.containsKey("backend")) {
+            backend = ctx.getArgument("backend", String.class);
         }
-        if(arg.arguments.containsKey("permission")) {
-            permission = (String) arg.arguments.get("permission");
+        if(args.containsKey("permission")) {
+            permission = ctx.getArgument("permission", String.class);
         }
-        if(arg.arguments.containsKey("namespace")) {
-            namespace = (String) arg.arguments.get("namespace");
+        if(args.containsKey("namespace")) {
+            namespace = ctx.getArgument("namespace", String.class);
         }
 
         ServerInfo out = new ServerInfo(host, port, backend, permission, namespace);
@@ -209,42 +210,4 @@ public class ServerSwitcherCommand {
 
         return out;
     }
-
-
-    // Absolutely disgusting jank to preserve arguments across redirects
-    private static class WrappedContext implements CommandSigningContext {
-
-        private final CommandSigningContext internal;
-        private final Map<String, Object> arguments;
-
-        public WrappedContext(CommandSigningContext original) {
-            this.internal = original;
-            this.arguments = new HashMap<>();
-        }
-
-        public void addArgument(String key, Object arg) {
-            arguments.put(key, arg);
-        }
-
-        @Nullable
-        @Override
-        public PlayerChatMessage getArgument(String string) {
-            return internal.getArgument(string);
-        }
-
-        public static CommandSourceStack preserveArgument(CommandContext<CommandSourceStack> ctx, String arg, Class<?> argClazz) {
-
-            CommandSigningContext src = ctx.getSource().getSigningContext();
-            WrappedContext ac;
-            if(src instanceof WrappedContext) {
-                ac = (WrappedContext) src;
-            } else {
-                ac = new WrappedContext(src);
-            }
-
-            ac.addArgument(arg, ctx.getArgument(arg, argClazz));
-            return ctx.getSource().withSigningContext(ac, ctx.getSource().getChatMessageChainer());
-        }
-    }
-
 }
