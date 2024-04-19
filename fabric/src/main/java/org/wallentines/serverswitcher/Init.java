@@ -1,7 +1,9 @@
 package org.wallentines.serverswitcher;
 
+import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import org.wallentines.mcore.Server;
 import org.wallentines.mcore.lang.LangRegistry;
@@ -32,7 +34,9 @@ public class Init implements ModInitializer {
         });
 
         Server.RUNNING_SERVER.setEvent.register(this, srv -> {
-            ServerCommand.register(ConversionUtil.validate(srv).getCommands().getDispatcher());
+            CommandDispatcher<CommandSourceStack> dispatcher = ConversionUtil.validate(srv).getCommands().getDispatcher();
+            ServerCommand.register(dispatcher);
+            ServerSwitcherCommand.register(dispatcher);
         });
 
         ServerConfigurationConnectionEvents.BEFORE_CONFIGURE.register((handler, server) -> {

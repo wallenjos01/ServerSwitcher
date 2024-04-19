@@ -30,7 +30,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class ServerSwitcher extends ServerSwitcherAPI {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger("ServerSwitcher");
 
     public static final Identifier RECONNECT_COOKIE = new Identifier("mdp", "rc");
     private final RegistryBase<String, ServerInfo> serverRegistry;
@@ -126,8 +125,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.SERVER_EXISTS;
                 }
 
-                if (conn.insert("servers", SERVER_INFO_SCHEMA)
-                        .addRow(ServerInfo.SERIALIZER.serialize(ConfigContext.INSTANCE, info).getOrThrow().asSection())
+                if (conn.insert("servers", ServerInfo.SERIALIZER.serialize(ConfigContext.INSTANCE, info).getOrThrow().asSection().with("name", server))
                         .execute()[0] != 1) {
 
                     LOGGER.error("Unable to register server " + server + "!");

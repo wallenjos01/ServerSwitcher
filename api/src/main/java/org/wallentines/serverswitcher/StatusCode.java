@@ -7,9 +7,9 @@ public enum StatusCode {
     SERVER_EXISTS("error.server_exists"),
     SERVER_NOT_EXISTS("error.server_not_exists"),
     INSERT_FAILED("error.insert_failed"),
-    UPDATE_FAILED("error.insert_failed"),
+    UPDATE_FAILED("error.update_failed"),
     DELETE_FAILED("error.delete_failed"),
-    UNKNOWN_ERROR("error.invalid_row");
+    UNKNOWN_ERROR("error.unknown_error");
 
     public final String langKey;
 
