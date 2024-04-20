@@ -7,19 +7,26 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedArgument;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.CommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import org.wallentines.brigpatch.mixin.AccessorCommandContext;
+import org.wallentines.mcore.IdentifierArgument;
 import org.wallentines.mcore.lang.CustomPlaceholder;
+import org.wallentines.mcore.lang.LangManager;
+import org.wallentines.mcore.text.MutableComponent;
 import org.wallentines.mcore.text.WrappedComponent;
 import org.wallentines.midnightlib.registry.Identifier;
 
 import java.util.Map;
 
 public class ServerSwitcherCommand {
+
+    private static final IdentifierArgument DEFAULT = new IdentifierArgument("default");
+
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
         LiteralArgumentBuilder<CommandSourceStack> add = Commands.literal("svs")
@@ -35,21 +42,24 @@ public class ServerSwitcherCommand {
         dispatcher.register(Commands.literal("svs")
             .requires(Permissions.require("serverswitcher.admin", 4))
             .then(addFlags(Commands.literal("add"), dispatcher.register(add).getChild("add"))
-                .then(Commands.argument("server", StringArgumentType.word())
+                .then(Commands.argument("server", DEFAULT)
                     .executes(ServerSwitcherCommand::executeAdd)
                 )
             )
             .then(addFlags(Commands.literal("edit"), dispatcher.register(edit).getChild("edit"))
-                .then(Commands.argument("server", StringArgumentType.word())
-                    .suggests(ServerCommand.SUGGEST_SERVERS)
+                .then(Commands.argument("server", DEFAULT)
+                    .suggests(SUGGEST_ALL_SERVERS)
                     .executes(ServerSwitcherCommand::executeEdit)
                 )
             )
             .then(Commands.literal("remove")
-                .then(Commands.argument("server", StringArgumentType.word())
-                    .suggests(ServerCommand.SUGGEST_SERVERS)
+                .then(Commands.argument("server", DEFAULT)
+                    .suggests(SUGGEST_ALL_SERVERS)
                     .executes(ServerSwitcherCommand::executeRemove)
                 )
+            )
+            .then(Commands.literal("list")
+                .executes(ServerSwitcherCommand::executeList)
             )
             .then(Commands.literal("sync")
                 .executes(ServerSwitcherCommand::executeSync)
@@ -59,6 +69,11 @@ public class ServerSwitcherCommand {
             )
         );
     }
+
+    public static final SuggestionProvider<CommandSourceStack> SUGGEST_ALL_SERVERS = (ctx, builder) -> {
+        ServerSwitcherAPI sw = ServerSwitcher.getInstance();
+        return DEFAULT.suggest(sw.getAllServers().stream(), builder);
+    };
 
     private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect) {
         return builder
@@ -78,7 +93,7 @@ public class ServerSwitcherCommand {
             return 0;
         }
 
-        String server = ctx.getArgument("server", String.class);
+        Identifier server = ctx.getArgument("server", Identifier.class);
         ServerInfo inf = readServerInfo(ctx);
 
         if(inf.hostname() == null && inf.proxyBackend() == null) {
@@ -86,7 +101,7 @@ public class ServerSwitcherCommand {
             return 0;
         }
 
-        api.registerServer(Identifier.parseOrDefault(server, api.getNamespace()), inf).thenAccept(res -> {
+        api.registerServer(server, inf).thenAccept(res -> {
 
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.add", CustomPlaceholder.inline("server", server))), true);
@@ -106,10 +121,10 @@ public class ServerSwitcherCommand {
             return 0;
         }
 
-        String server = ctx.getArgument("server", String.class);
+        Identifier server = ctx.getArgument("server", Identifier.class);
         ServerInfo inf = readServerInfo(ctx);
 
-        api.updateServer(Identifier.parseOrDefault(server, api.getNamespace()), inf).thenAccept(res -> {
+        api.updateServer(server, inf).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.edit", CustomPlaceholder.inline("server", server))), true);
             } else {
@@ -128,9 +143,9 @@ public class ServerSwitcherCommand {
             return 0;
         }
 
-        String server = ctx.getArgument("server", String.class);
+        Identifier server = ctx.getArgument("server", Identifier.class);
 
-        api.removeServer(Identifier.parseOrDefault(server, api.getNamespace())).thenAccept(res -> {
+        api.removeServer(server).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
                 ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.remove", CustomPlaceholder.inline("server", server))), true);
             } else {
@@ -140,6 +155,30 @@ public class ServerSwitcherCommand {
 
         return 1;
     }
+
+    private static int executeList(CommandContext<CommandSourceStack> ctx) {
+
+        ServerSwitcherAPI api = ServerSwitcher.getInstance();
+        if(api == null) {
+            ctx.getSource().sendFailure(Component.literal("ServerSwitcher is not loaded!"));
+            return 0;
+        }
+        LangManager manager = api.getLangManager();
+
+        ctx.getSource().sendSuccess(() -> {
+
+            MutableComponent out = MutableComponent.empty();
+            for(Identifier id : api.getAllServers()) {
+                out.addChild(org.wallentines.mcore.text.Component.text("\n"));
+                out.addChild(manager.component("command.list.entry", CustomPlaceholder.inline("id", id)));
+            }
+
+            return WrappedComponent.resolved(manager.component("command.list", CustomPlaceholder.of("ids", out.toComponent())));
+        }, true);
+
+        return 1;
+    }
+
 
     private static int executeSync(CommandContext<CommandSourceStack> ctx) {
 

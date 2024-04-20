@@ -9,6 +9,7 @@ import org.wallentines.midnightlib.registry.Identifier;
 import org.wallentines.midnightlib.registry.RegistryBase;
 import org.wallentines.midnightlib.types.ResettableSingleton;
 
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class ServerSwitcherAPI {
@@ -23,6 +24,7 @@ public abstract class ServerSwitcherAPI {
 
 
     public abstract RegistryBase<String, ServerInfo> getServerRegistry();
+    public abstract Collection<Identifier> getAllServers();
 
     public abstract String getServerName();
     public abstract String getNamespace();

@@ -11,5 +11,7 @@
   "command.edit": "Updated server %server%",
   "command.remove": "Removed server %server%",
   "command.sync": "Synchronized with database",
-  "command.reload": "ServerSwitcher reloaded"
+  "command.reload": "ServerSwitcher reloaded",
+  "command.list.entry": " &7- &f%id%",
+  "command.list": "Registered Servers: %ids%"
 }

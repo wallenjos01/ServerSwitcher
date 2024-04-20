@@ -24,6 +24,7 @@ import org.wallentines.midnightlib.registry.StringRegistry;
 
 import java.io.File;
 import java.security.PublicKey;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -49,7 +50,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
             .with("clear_reconnect_cookie", true)
             .with("jwt_expire_sec", 5)
             .with("storage", new ConfigSection()
-                    .with("table_prefix", "sws_"));
+                    .with("table_prefix", "svs_"));
 
     private ServerSwitcher(File configFolder, LangRegistry defaults) {
 
@@ -109,6 +110,11 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         return serverRegistry;
     }
 
+    @Override
+    public Collection<Identifier> getAllServers() {
+        return allServers;
+    }
+
     public String getServerName() {
         return serverName;
     }
@@ -136,7 +142,10 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.INSERT_FAILED;
                 }
 
-                serverRegistry.register(server.getPath(), info);
+                if(server.getNamespace().equals(namespace)) {
+                    serverRegistry.register(server.getPath(), info);
+                }
+                allServers.add(server);
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -199,7 +208,6 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.SERVER_NOT_EXISTS;
                 }
 
-
                 if (conn.delete("servers")
                         .where(Condition.equals("name", DataType.VARCHAR.create(server.getPath())).and(Condition.equals("namespace", DataType.VARCHAR.create(server.getNamespace()))))
                         .execute()[0] != 1) {
@@ -209,6 +217,8 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                 }
 
                 if(server.getNamespace().equals(namespace)) serverRegistry.remove(server.getPath());
+                allServers.remove(server);
+
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -264,7 +274,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
         // Get all server names
         try {
-            res = connection.select("servers").withColumn("name").withColumn("namespace").execute();
+            res = connection.select("servers").withColumn("namespace").withColumn("name").execute();
         } catch (Throwable th) {
             LOGGER.error("An exception occurred while syncing with the database!", th);
             return StatusCode.UNKNOWN_ERROR;
