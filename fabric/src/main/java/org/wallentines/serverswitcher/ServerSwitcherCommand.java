@@ -41,12 +41,12 @@ public class ServerSwitcherCommand {
 
         dispatcher.register(Commands.literal("svs")
             .requires(Permissions.require("serverswitcher.admin", 4))
-            .then(addFlags(Commands.literal("add"), dispatcher.register(add).getChild("add"))
+            .then(addFlags(Commands.literal("add"), dispatcher.register(add).getChild("add"), false)
                 .then(Commands.argument("server", DEFAULT)
                     .executes(ServerSwitcherCommand::executeAdd)
                 )
             )
-            .then(addFlags(Commands.literal("edit"), dispatcher.register(edit).getChild("edit"))
+            .then(addFlags(Commands.literal("edit"), dispatcher.register(edit).getChild("edit"), true)
                 .then(Commands.argument("server", DEFAULT)
                     .suggests(SUGGEST_ALL_SERVERS)
                     .executes(ServerSwitcherCommand::executeEdit)
@@ -75,13 +75,14 @@ public class ServerSwitcherCommand {
         return DEFAULT.suggest(sw.getAllServers().stream(), builder);
     };
 
-    private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect) {
-        return builder
+    private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect, boolean namespace) {
+        builder
             .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.string()).redirect(redirect)))
             .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).redirect(redirect)))
             .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.string()).redirect(redirect)))
-            .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(redirect)))
-            .then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.string()).redirect(redirect)));
+            .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(redirect)));
+        if(namespace) builder.then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.string()).redirect(redirect)));
+        return builder;
     }
 
 

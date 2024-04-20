@@ -1,10 +1,31 @@
 # ServerSwitcher
 A Fabric mod for switching servers via transfer packets.
 
+## Usage
+This mod requires the MidnightCore SQL module to be loaded. Enable it with `/mcore module enable sql` and load it with
+`/mcore module load sql`. Once the module is loaded, reload ServerSwitcher with `/svs reload`
+
+### Commands
+To switch to another server: `/server <name>`
+
+To add a server: `/svs add [-h <hostname> | -p <port> -b <backend> -P <permission>] [<namespace>:]<name>` <br/>
+To remove a server: `/svs remove [<namespace>:]<name>`<br/>
+To edit `/svs add [-h <hostname> | -p <port> -b <backend> -P <permission> -n <new namespace>] [<namespace>:]<name>` <br/>
+To list all servers in all namespaces: `/svs list` <br/>
+To sync the database: `/svs sync` <br/>
+To reload the configuration: `/svs reload` <br/>
+
+`/server` requires the permission `serverswitcher.server` or op level 2<br/>
+`/svs` requires the permission `serverswitcher.admin` or op level 4
+
+
 ## Configuration
 The root of the config file is a section with 4 keys:
-- `server`: The name of the server this mod installed on. 
-- `servers`: A map of server ids to definitions. (See below)
+- `server`: The name of the server this mod installed on.
+- `namespace`: This server's namespace. Only servers in the namespace will be usable in /server. If no namespace is 
+specified while using `/server add`, this one will be used by default.
+- `storage`: Configuration for the MidnightCore SQL module. Will use the `default` preset by default, with a table prefix of 
+`svs_`. See [MidnightCore](https://github.com/wallenjos01/MidnightCore) for more information.
 - `jwt_expire_sec`: Only relevant when used with [MidnightProxy](https://github.com/wallenjos01/MidnightProxy). Determines
 how long switch cookies should remain valid. 
 - `clear_reconnect_cookie`: Only relevant when used with [MidnightProxy](https://github.com/wallenjos01/MidnightProxy).
@@ -12,61 +33,26 @@ MidnightProxy uses a reconnect cookie to facilitate re-routing players after enc
 one reconnect anyway, so clearing the cookie is recommended. When this is enabled, the MidnightProxy reconnect cookie, as
 well as the switch cookie, are cleared when a player connects.
 
-## Server Definitions
-Server definitions are sections with 4 optional keys:
-- `hostname`: The hostname of the server to transfer the player to. If omitted, defaults to the hostname the player connected with.
-- `port`: The port of the server to transfer the player to. If omitted, defaults to the port the player connected with.
-- `proxy_backend`: If set, the server will set a JWT switch cookie on the client before transferring it. This cookie contains 
-  the server's backend ID, so MidnightProxy can be configured to route based on this cookie. To configure MidnightProxy
-  integration, see below.
-- `permission`: If set, the player will need this permission to switch to the server.
-
 ### Examples
-A configuration which switches based on hostname
-```json
-{
-  "server": "lobby",
-  "servers": { 
-    "lobby": {
-      "hostname": "lobby.server.net",
-      "port": 25565
-    },
-    "survival": {
-      "hostname": "survival.server.net",
-      "port": 25565
-    },
-    "creative": {
-      "hostname": "creative.server.net",
-      "port": 25565,
-      "permission": "server.creative"
-    }
-  }
-}
+Adding servers for a network which switch based on hostname
+```
+/svs add -h lobby.server.net lobby
+/svs add -h survival.server.net survival
+/svs add -h creative.server.net -P server.creative creative
 ```
 
-A configuration which switches based on [MidnightProxy](https://github.com/wallenjos01/MidnightProxy) backends
-```json
-{
-  "server": "lobby",
-  "servers": { 
-    "lobby": {
-      "hostname": "server.net",
-      "port": 25565,
-      "proxy_backend": "lobby"
-    },
-    "survival": {
-      "hostname": "server.net",
-      "port": 25565,
-      "proxy_backend": "survival"
-    },
-    "creative": {
-      "hostname": "server.net",
-      "port": 25565,
-      "proxy_backend": "creative",
-      "permission": "server.creative"
-    }
-  }
-}
+Adding servers for a network which switch based on port
+```
+/svs add -h server.net -p 25566 lobby
+/svs add -h server.net -p 25567 survival
+/svs add -h server.net -p 25568 -P server.creative creative
+```
+
+Adding servers for a network which switch based on [MidnightProxy](https://github.com/wallenjos01/MidnightProxy) backends
+```
+/svs add -b lobby lobby
+/svs add -b survival survival
+/svs add -b creative -P server.creative creative
 ```
 
 ## Integration with MidnightProxy
