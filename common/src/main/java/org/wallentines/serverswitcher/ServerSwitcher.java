@@ -181,8 +181,10 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.UPDATE_FAILED;
                 }
 
+                String serverNs = info.namespace() == null ? server.getNamespace() : info.namespace();
+
                 if(server.getNamespace().equals(namespace)) serverRegistry.remove(server.getPath());
-                if(info.namespace().equals(namespace)) serverRegistry.register(server.getPath(), info);
+                if(serverNs.equals(namespace)) serverRegistry.register(server.getPath(), info);
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
