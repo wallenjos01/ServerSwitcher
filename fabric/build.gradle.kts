@@ -1,47 +1,8 @@
 plugins {
     id("mod-build")
+    id("mod-shadow")
+    id("mod-fabric")
     id("mod-publish")
-    alias(libs.plugins.loom)
-}
-
-
-java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
-}
-
-loom {
-    runs {
-        getByName("client") {
-            runDir = "run/client"
-            ideConfigGenerated(false)
-            client()
-        }
-        getByName("server") {
-            runDir = "run/server"
-            ideConfigGenerated(false)
-            server()
-        }
-    }
-
-    mixin {
-        add(sourceSets.main.name, "${rootProject.name}-refmap.json")
-    }
-
-}
-
-tasks {
-    build {
-        dependsOn(remapJar)
-    }
-    jar {
-        archiveClassifier.set("dev")
-    }
-    remapJar {
-        archiveClassifier.set("")
-        val id = rootProject.name
-        archiveBaseName.set("${id}-${project.name}")
-        inputFile.set(jar.get().archiveFile)
-    }
 }
 
 
@@ -51,8 +12,8 @@ dependencies {
     api(project(":api"))
     api(project(":common"))
 
-    include(project(":api").setTransitive(false))
-    include(project(":common").setTransitive(false))
+    shadow(project(":api")) { isTransitive = false }
+    shadow(project(":common")) { isTransitive = false }
 
     // Minecraft
     minecraft("com.mojang:minecraft:1.20.5-rc2")
@@ -67,7 +28,7 @@ dependencies {
 
     // JWT
     modApi(libs.midnight.proxy.jwt)
-    include(libs.midnight.proxy.jwt)
+    shadow(libs.midnight.proxy.jwt) { isTransitive = false }
 }
 
 

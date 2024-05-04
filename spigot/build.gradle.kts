@@ -1,7 +1,7 @@
 plugins {
     id("mod-build")
+    id("mod-shadow")
     id("mod-publish")
-    alias(libs.plugins.shadow)
 }
 
 
@@ -22,26 +22,17 @@ dependencies {
     // SkinSetter
     api(project(":api"))
     api(project(":common"))
-    api(libs.midnight.core.spigot)
 
-    shadow(project(":common").setTransitive(false))
-    shadow(project(":api").setTransitive(false))
+    shadow(project(":common")) { isTransitive = false }
+    shadow(project(":api")) { isTransitive = false }
 
+    compileOnly(libs.midnight.core)
+    compileOnly(libs.midnight.core.spigot)
     compileOnly(libs.midnight.cfg)
     compileOnly(libs.midnight.cfg.json)
     compileOnly(libs.midnight.cfg.binary)
 
-    compileOnly("org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.20.6-R0.1-SNAPSHOT")
+
     compileOnly(libs.jetbrains.annotations)
-
-}
-
-
-tasks.withType<ProcessResources>() {
-    filesMatching("plugin.yml") {
-        expand(mapOf(
-                Pair("version", project.version as String),
-                Pair("id", project.properties["id"] as String))
-        )
-    }
 }
