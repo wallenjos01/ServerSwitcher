@@ -1,6 +1,5 @@
 package org.wallentines.serverswitcher;
 
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wallentines.mcore.lang.LangManager;
@@ -18,7 +17,8 @@ public abstract class ServerSwitcherAPI {
 
     public static final Identifier COOKIE_ID = new Identifier("serverswitcher", "switch");
     public static final Logger LOGGER = LoggerFactory.getLogger("ServerSwitcher");
-    public static @Nullable ServerSwitcherAPI getInstance() {
+
+    public static ServerSwitcherAPI getInstance() {
         return INSTANCE.get();
     }
 

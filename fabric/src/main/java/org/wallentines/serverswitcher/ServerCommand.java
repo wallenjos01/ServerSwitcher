@@ -42,6 +42,7 @@ public class ServerCommand {
         return SharedSuggestionProvider.suggest(sw.getServerRegistry().getIds().stream().filter(id -> {
             if(id.equals(sw.getServerName())) return false;
             ServerInfo inf = sw.getServerRegistry().get(id);
+            if(inf == null) return false;
             return inf.permission() == null || Permissions.check(ctx.getSource(), inf.permission(), 3);
         }), builder);
     };

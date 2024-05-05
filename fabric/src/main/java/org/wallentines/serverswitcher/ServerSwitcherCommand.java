@@ -12,7 +12,6 @@ import com.mojang.brigadier.tree.CommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
 import org.wallentines.brigpatch.mixin.AccessorCommandContext;
 import org.wallentines.mcore.IdentifierArgument;
 import org.wallentines.mcore.lang.CustomPlaceholder;
@@ -70,10 +69,8 @@ public class ServerSwitcherCommand {
         );
     }
 
-    public static final SuggestionProvider<CommandSourceStack> SUGGEST_ALL_SERVERS = (ctx, builder) -> {
-        ServerSwitcherAPI sw = ServerSwitcher.getInstance();
-        return DEFAULT.suggest(sw.getAllServers().stream(), builder);
-    };
+    public static final SuggestionProvider<CommandSourceStack> SUGGEST_ALL_SERVERS = (ctx, builder) ->
+            DEFAULT.suggest(ServerSwitcher.getInstance().getAllServers().stream(), builder);
 
     private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect, boolean namespace) {
         builder
@@ -89,11 +86,6 @@ public class ServerSwitcherCommand {
     private static int executeAdd(CommandContext<CommandSourceStack> ctx) {
 
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        if(api == null) {
-            ctx.getSource().sendFailure(Component.literal("ServerSwitcher is not loaded!"));
-            return 0;
-        }
-
         Identifier server = ctx.getArgument("server", Identifier.class);
         ServerInfo inf = readServerInfo(ctx);
 
@@ -117,11 +109,6 @@ public class ServerSwitcherCommand {
 
     private static int executeEdit(CommandContext<CommandSourceStack> ctx) {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        if(api == null) {
-            ctx.getSource().sendFailure(Component.literal("ServerSwitcher is not loaded!"));
-            return 0;
-        }
-
         Identifier server = ctx.getArgument("server", Identifier.class);
         ServerInfo inf = readServerInfo(ctx);
 
@@ -139,11 +126,6 @@ public class ServerSwitcherCommand {
 
     private static int executeRemove(CommandContext<CommandSourceStack> ctx) {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        if(api == null) {
-            ctx.getSource().sendFailure(Component.literal("ServerSwitcher is not loaded!"));
-            return 0;
-        }
-
         Identifier server = ctx.getArgument("server", Identifier.class);
 
         api.removeServer(server).thenAccept(res -> {
@@ -160,10 +142,6 @@ public class ServerSwitcherCommand {
     private static int executeList(CommandContext<CommandSourceStack> ctx) {
 
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        if(api == null) {
-            ctx.getSource().sendFailure(Component.literal("ServerSwitcher is not loaded!"));
-            return 0;
-        }
         LangManager manager = api.getLangManager();
 
         ctx.getSource().sendSuccess(() -> {
@@ -184,10 +162,6 @@ public class ServerSwitcherCommand {
     private static int executeSync(CommandContext<CommandSourceStack> ctx) {
 
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        if(api == null) {
-            ctx.getSource().sendFailure(Component.literal("ServerSwitcher is not loaded!"));
-            return 0;
-        }
 
         api.sync().thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
@@ -203,10 +177,6 @@ public class ServerSwitcherCommand {
     private static int executeReload(CommandContext<CommandSourceStack> ctx) {
 
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        if(api == null) {
-            ctx.getSource().sendFailure(Component.literal("ServerSwitcher is not loaded!"));
-            return 0;
-        }
 
         api.reload().thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
