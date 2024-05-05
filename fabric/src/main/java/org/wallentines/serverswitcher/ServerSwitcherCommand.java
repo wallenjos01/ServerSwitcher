@@ -12,19 +12,16 @@ import com.mojang.brigadier.tree.CommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
 import org.wallentines.brigpatch.mixin.AccessorCommandContext;
-import org.wallentines.mcore.IdentifierArgument;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.lang.LangManager;
 import org.wallentines.mcore.text.MutableComponent;
 import org.wallentines.mcore.text.WrappedComponent;
-import org.wallentines.midnightlib.registry.Identifier;
 
 import java.util.Map;
 
 public class ServerSwitcherCommand {
-
-    private static final IdentifierArgument DEFAULT = new IdentifierArgument("default");
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
@@ -40,19 +37,19 @@ public class ServerSwitcherCommand {
 
         dispatcher.register(Commands.literal("svs")
             .requires(Permissions.require("serverswitcher.admin", 4))
-            .then(addFlags(Commands.literal("add"), dispatcher.register(add).getChild("add"), false)
-                .then(Commands.argument("server", DEFAULT)
+            .then(addFlags(Commands.literal("add"), dispatcher.register(add).getChild("add"))
+                .then(Commands.argument("server", StringArgumentType.word())
                     .executes(ServerSwitcherCommand::executeAdd)
                 )
             )
-            .then(addFlags(Commands.literal("edit"), dispatcher.register(edit).getChild("edit"), true)
-                .then(Commands.argument("server", DEFAULT)
+            .then(addFlags(Commands.literal("edit"), dispatcher.register(edit).getChild("edit"))
+                .then(Commands.argument("server", StringArgumentType.word())
                     .suggests(SUGGEST_ALL_SERVERS)
                     .executes(ServerSwitcherCommand::executeEdit)
                 )
             )
             .then(Commands.literal("remove")
-                .then(Commands.argument("server", DEFAULT)
+                .then(Commands.argument("server", StringArgumentType.word())
                     .suggests(SUGGEST_ALL_SERVERS)
                     .executes(ServerSwitcherCommand::executeRemove)
                 )
@@ -70,23 +67,21 @@ public class ServerSwitcherCommand {
     }
 
     public static final SuggestionProvider<CommandSourceStack> SUGGEST_ALL_SERVERS = (ctx, builder) ->
-            DEFAULT.suggest(ServerSwitcher.getInstance().getAllServers().stream(), builder);
+            SharedSuggestionProvider.suggest(ServerSwitcher.getInstance().getServerRegistry().getIds(), builder);
 
-    private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect, boolean namespace) {
-        builder
+    private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect) {
+        return builder
             .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.string()).redirect(redirect)))
             .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).redirect(redirect)))
             .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.string()).redirect(redirect)))
             .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(redirect)));
-        if(namespace) builder.then(Commands.literal("-n").then(Commands.argument("namespace", StringArgumentType.string()).redirect(redirect)));
-        return builder;
     }
 
 
     private static int executeAdd(CommandContext<CommandSourceStack> ctx) {
 
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        Identifier server = ctx.getArgument("server", Identifier.class);
+        String server = ctx.getArgument("server", String.class);
         ServerInfo inf = readServerInfo(ctx);
 
         if(inf.hostname() == null && inf.proxyBackend() == null) {
@@ -109,7 +104,7 @@ public class ServerSwitcherCommand {
 
     private static int executeEdit(CommandContext<CommandSourceStack> ctx) {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        Identifier server = ctx.getArgument("server", Identifier.class);
+        String server = ctx.getArgument("server", String.class);
         ServerInfo inf = readServerInfo(ctx);
 
         api.updateServer(server, inf).thenAccept(res -> {
@@ -126,7 +121,7 @@ public class ServerSwitcherCommand {
 
     private static int executeRemove(CommandContext<CommandSourceStack> ctx) {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        Identifier server = ctx.getArgument("server", Identifier.class);
+        String server = ctx.getArgument("server", String.class);
 
         api.removeServer(server).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
@@ -147,7 +142,7 @@ public class ServerSwitcherCommand {
         ctx.getSource().sendSuccess(() -> {
 
             MutableComponent out = MutableComponent.empty();
-            for(Identifier id : api.getAllServers()) {
+            for(String id : api.getServerRegistry().getIds()) {
                 out.addChild(org.wallentines.mcore.text.Component.text("\n"));
                 out.addChild(manager.component("command.list.entry", CustomPlaceholder.inline("id", id)));
             }
@@ -196,7 +191,6 @@ public class ServerSwitcherCommand {
         Integer port = null;
         String backend = null;
         String permission = null;
-        String namespace = null;
 
         Map<String, ParsedArgument<CommandSourceStack, ?>> args = ((AccessorCommandContext<CommandSourceStack>) ctx).getArguments();
 
@@ -212,10 +206,7 @@ public class ServerSwitcherCommand {
         if(args.containsKey("permission")) {
             permission = ctx.getArgument("permission", String.class);
         }
-        if(args.containsKey("namespace")) {
-            namespace = ctx.getArgument("namespace", String.class);
-        }
 
-        return new ServerInfo(host, port, backend, permission, namespace);
+        return new ServerInfo(host, port, backend, permission);
     }
 }

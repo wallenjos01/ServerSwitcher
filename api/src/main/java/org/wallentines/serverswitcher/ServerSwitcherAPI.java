@@ -24,16 +24,14 @@ public abstract class ServerSwitcherAPI {
 
 
     public abstract RegistryBase<String, ServerInfo> getServerRegistry();
-    public abstract Collection<Identifier> getAllServers();
 
     public abstract String getServerName();
-    public abstract String getNamespace();
 
     public abstract CompletableFuture<StatusCode> reload();
     public abstract CompletableFuture<StatusCode> sync();
-    public abstract CompletableFuture<StatusCode> registerServer(Identifier server, ServerInfo info);
-    public abstract CompletableFuture<StatusCode> updateServer(Identifier server, ServerInfo info);
-    public abstract CompletableFuture<StatusCode> removeServer(Identifier server);
+    public abstract CompletableFuture<StatusCode> registerServer(String server, ServerInfo info);
+    public abstract CompletableFuture<StatusCode> updateServer(String server, ServerInfo info);
+    public abstract CompletableFuture<StatusCode> removeServer(String server);
 
     public abstract LangManager getLangManager();
 
@@ -48,9 +46,8 @@ public abstract class ServerSwitcherAPI {
             .withColumn(Column.builder("name", DataType.VARCHAR(126)).withConstraint(Constraint.NOT_NULL))
             .withColumn("hostname", DataType.VARCHAR(126))
             .withColumn("port", DataType.INTEGER)
-            .withColumn("proxy_backend", DataType.VARCHAR(126))
+            .withColumn("backend", DataType.VARCHAR(126))
             .withColumn("permission", DataType.VARCHAR(126))
-            .withColumn(Column.builder("namespace", DataType.VARCHAR(126)).withConstraint(Constraint.NOT_NULL).withConstraint(Constraint.DEFAULT(DataType.VARCHAR.create("default"))))
             .build();
 
 }
