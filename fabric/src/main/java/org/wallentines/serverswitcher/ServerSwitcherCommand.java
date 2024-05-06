@@ -1,18 +1,25 @@
 package org.wallentines.serverswitcher;
 
+import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedArgument;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.CommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.item.ItemArgument;
+import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.world.item.ItemStack;
 import org.wallentines.brigpatch.mixin.AccessorCommandContext;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.lang.LangManager;
@@ -23,29 +30,34 @@ import java.util.Map;
 
 public class ServerSwitcherCommand {
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
 
         LiteralArgumentBuilder<CommandSourceStack> add = Commands.literal("svs")
                 .requires(Permissions.require("serverswitcher.admin", 4))
-                .then(Commands.literal("add"));
+                .then(Commands.literal("add").then(Commands.argument("server", StringArgumentType.word())));
 
 
         LiteralArgumentBuilder<CommandSourceStack> edit = Commands.literal("svs")
                 .requires(Permissions.require("serverswitcher.admin", 4))
-                .then(Commands.literal("edit"));
+                .then(Commands.literal("edit").then(Commands.argument("server", StringArgumentType.word())));
 
 
         dispatcher.register(Commands.literal("svs")
             .requires(Permissions.require("serverswitcher.admin", 4))
-            .then(addFlags(Commands.literal("add"), dispatcher.register(add).getChild("add"))
-                .then(Commands.argument("server", StringArgumentType.word())
-                    .executes(ServerSwitcherCommand::executeAdd)
+            .then(Commands.literal("add")
+                .then(addFlags(Commands.argument("server", StringArgumentType.word()),
+                        dispatcher.register(add)
+                                .getChild("add")
+                                .getChild("server"),
+                        ServerSwitcherCommand::executeAdd, context)
                 )
             )
-            .then(addFlags(Commands.literal("edit"), dispatcher.register(edit).getChild("edit"))
-                .then(Commands.argument("server", StringArgumentType.word())
-                    .suggests(SUGGEST_ALL_SERVERS)
-                    .executes(ServerSwitcherCommand::executeEdit)
+            .then(Commands.literal("edit")
+                .then(addFlags(Commands.argument("server", StringArgumentType.word()),
+                    dispatcher.register(edit)
+                            .getChild("edit")
+                            .getChild("server"),
+                    ServerSwitcherCommand::executeEdit, context)
                 )
             )
             .then(Commands.literal("remove")
@@ -69,16 +81,23 @@ public class ServerSwitcherCommand {
     public static final SuggestionProvider<CommandSourceStack> SUGGEST_ALL_SERVERS = (ctx, builder) ->
             SharedSuggestionProvider.suggest(ServerSwitcher.getInstance().getServerRegistry().getIds(), builder);
 
-    private static ArgumentBuilder<CommandSourceStack, ?> addFlags(ArgumentBuilder<CommandSourceStack, ?> builder, CommandNode<CommandSourceStack> redirect) {
+    private static ArgumentBuilder<CommandSourceStack, ?> addFlags(
+            ArgumentBuilder<CommandSourceStack, ?> builder,
+            CommandNode<CommandSourceStack> redirect,
+            Command<CommandSourceStack> execute,
+            CommandBuildContext context) {
         return builder
-            .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.string()).redirect(redirect)))
-            .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).redirect(redirect)))
-            .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.string()).redirect(redirect)))
-            .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).redirect(redirect)));
+            .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.string()).executes(execute).redirect(redirect)))
+            .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).executes(execute).redirect(redirect)))
+            .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.string()).executes(execute).redirect(redirect)))
+            .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).executes(execute).redirect(redirect)))
+            .then(Commands.literal("-g").then(Commands.argument("in_gui", BoolArgumentType.bool()).executes(execute).redirect(redirect)))
+            .then(Commands.literal("-i").then(Commands.argument("item", ItemArgument.item(context)).executes(execute).redirect(redirect)))
+            .executes(execute);
     }
 
 
-    private static int executeAdd(CommandContext<CommandSourceStack> ctx) {
+    private static int executeAdd(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
         String server = ctx.getArgument("server", String.class);
@@ -102,7 +121,7 @@ public class ServerSwitcherCommand {
 
     }
 
-    private static int executeEdit(CommandContext<CommandSourceStack> ctx) {
+    private static int executeEdit(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
         String server = ctx.getArgument("server", String.class);
         ServerInfo inf = readServerInfo(ctx);
@@ -148,7 +167,7 @@ public class ServerSwitcherCommand {
             }
 
             return WrappedComponent.resolved(manager.component("command.list", CustomPlaceholder.of("ids", out.toComponent())));
-        }, true);
+        }, false);
 
         return 1;
     }
@@ -186,11 +205,13 @@ public class ServerSwitcherCommand {
 
 
     @SuppressWarnings("unchecked")
-    private static ServerInfo readServerInfo(CommandContext<CommandSourceStack> ctx) {
+    private static ServerInfo readServerInfo(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         String host = null;
         Integer port = null;
         String backend = null;
         String permission = null;
+        boolean inGui = true;
+        ItemStack item = null;
 
         Map<String, ParsedArgument<CommandSourceStack, ?>> args = ((AccessorCommandContext<CommandSourceStack>) ctx).getArguments();
 
@@ -206,7 +227,13 @@ public class ServerSwitcherCommand {
         if(args.containsKey("permission")) {
             permission = ctx.getArgument("permission", String.class);
         }
+        if(args.containsKey("in_gui")) {
+            inGui = ctx.getArgument("in_gui", Boolean.class);
+        }
+        if(args.containsKey("item")) {
+            item = ctx.getArgument("item", ItemInput.class).createItemStack(1, false);
+        }
 
-        return new ServerInfo(host, port, backend, permission);
+        return new ServerInfo(host, port, backend, permission, inGui, item);
     }
 }

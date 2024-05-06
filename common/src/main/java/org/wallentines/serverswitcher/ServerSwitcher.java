@@ -83,7 +83,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         key = keyStore.getKey("key", KeyType.RSA_PUBLIC);
 
         this.clearReconnect = sec.getBoolean("clear_reconnect_cookie");
-        this.jwtTimeout = sec.getInt("jwt_timeout_ms");
+        this.jwtTimeout = sec.getInt("jwt_expire_sec");
 
         return sync();
     }

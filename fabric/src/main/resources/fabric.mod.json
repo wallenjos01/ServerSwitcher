@@ -12,7 +12,8 @@
   },
   "depends": {
     "fabricloader": "*",
-    "midnightcore": "*"
+    "midnightcore": "*",
+    "fabric-command-api-v2": "*"
   },
   "mixins": [
     "serverswitcher.mixins.json"

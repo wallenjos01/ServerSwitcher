@@ -7,11 +7,15 @@
   "error.update_failed": "Unable to update server!",
   "error.delete_failed": "Unable to delete server!",
   "error.unknown_error": "An unknown error occurred! Check the console for additional information!",
+  "error.already_connected": "You are already connected to that server!",
+  "error.server_not_available": "Server %server% is not available!",
+  "error.no_servers": "There are no available servers.",
   "command.add": "Added server %server%",
   "command.edit": "Updated server %server%",
   "command.remove": "Removed server %server%",
   "command.sync": "Synchronized with database",
   "command.reload": "ServerSwitcher reloaded",
   "command.list.entry": " &7- &f%id%",
-  "command.list": "Registered Servers: %ids%"
+  "command.list": "Registered Servers: %ids%",
+  "gui.title": "Select a Server"
 }

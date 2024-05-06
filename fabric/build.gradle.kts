@@ -16,11 +16,11 @@ dependencies {
     shadow(project(":common")) { isTransitive = false }
 
     // Minecraft
-    minecraft("com.mojang:minecraft:1.20.5-rc2")
+    minecraft("com.mojang:minecraft:1.20.6")
     mappings(loom.officialMojangMappings())
 
     // Fabric Loader
-    modImplementation("net.fabricmc:fabric-loader:0.15.10")
+    modImplementation("net.fabricmc:fabric-loader:0.15.11")
 
     // MidnightCore
     modApi(libs.midnight.core.fabric)

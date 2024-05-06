@@ -3,12 +3,14 @@ package org.wallentines.serverswitcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wallentines.mcore.lang.LangManager;
-import org.wallentines.mdcfg.sql.*;
+import org.wallentines.mdcfg.sql.Column;
+import org.wallentines.mdcfg.sql.Constraint;
+import org.wallentines.mdcfg.sql.DataType;
+import org.wallentines.mdcfg.sql.TableSchema;
 import org.wallentines.midnightlib.registry.Identifier;
 import org.wallentines.midnightlib.registry.RegistryBase;
 import org.wallentines.midnightlib.types.ResettableSingleton;
 
-import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class ServerSwitcherAPI {
@@ -48,6 +50,8 @@ public abstract class ServerSwitcherAPI {
             .withColumn("port", DataType.INTEGER)
             .withColumn("backend", DataType.VARCHAR(126))
             .withColumn("permission", DataType.VARCHAR(126))
+            .withColumn("in_gui", DataType.BOOLEAN)
+            .withColumn("item", DataType.BLOB(4096))
             .build();
 
 }
