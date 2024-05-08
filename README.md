@@ -6,24 +6,24 @@ This mod requires the MidnightCore SQL module to be loaded. Enable it with `/mco
 `/mcore module load sql`. Once the module is loaded, reload ServerSwitcher with `/svs reload`
 
 ### Commands
-To switch to another server: `/server <name>`
+To switch to another server: `/server <name>` <br/>
+To view a GUI containing available servers: `/servers`
 
-To add a server: `/svs add [-h <hostname> | -p <port> -b <backend> -P <permission>] [<namespace>:]<name>` <br/>
-To remove a server: `/svs remove [<namespace>:]<name>`<br/>
-To edit `/svs add [-h <hostname> | -p <port> -b <backend> -P <permission> -n <new namespace>] [<namespace>:]<name>` <br/>
+To add a server: `/svs add <name> [-h <hostname> | -p <port> | -b <backend> | -P <permission> | -g <in_gui> | -i <item>]` <br/>
+To remove a server: `/svs remove <name>`<br/>
+To edit a server: `/svs edit <name> [-h <hostname> | -p <port> | -b <backend> | -P <permission> | -g <in_gui> | -i <item>]` <br/>
 To list all servers in all namespaces: `/svs list` <br/>
 To sync the database: `/svs sync` <br/>
 To reload the configuration: `/svs reload` <br/>
 
-`/server` requires the permission `serverswitcher.server` or op level 2<br/>
+`/server` requires the permission `serverswitcher.server` or op level 3<br/>
+`/servers` requires the permission `serverswitcher.servers` or op level 3<br/>
 `/svs` requires the permission `serverswitcher.admin` or op level 4
 
 
 ## Configuration
 The root of the config file is a section with 4 keys:
 - `server`: The name of the server this mod installed on.
-- `namespace`: This server's namespace. Only servers in the namespace will be usable in /server. If no namespace is 
-specified while using `/server add`, this one will be used by default.
 - `storage`: Configuration for the MidnightCore SQL module. Will use the `default` preset by default, with a table prefix of 
 `svs_`. See [MidnightCore](https://github.com/wallenjos01/MidnightCore) for more information.
 - `jwt_expire_sec`: Only relevant when used with [MidnightProxy](https://github.com/wallenjos01/MidnightProxy). Determines
@@ -36,24 +36,34 @@ well as the switch cookie, are cleared when a player connects.
 ### Examples
 Adding servers for a network which switch based on hostname
 ```
-/svs add -h lobby.server.net lobby
-/svs add -h survival.server.net survival
-/svs add -h creative.server.net -P server.creative creative
+/svs add lobby -h lobby.server.net 
+/svs add survival -h survival.server.net 
+/svs add creative -h creative.server.net -P server.creative 
 ```
 
 Adding servers for a network which switch based on port
 ```
-/svs add -h server.net -p 25566 lobby
-/svs add -h server.net -p 25567 survival
-/svs add -h server.net -p 25568 -P server.creative creative
+/svs add lobby -h server.net -p 25566
+/svs add survival -h server.net -p 25567
+/svs add creative -h server.net -p 25568 -P server.creative
 ```
 
 Adding servers for a network which switch based on [MidnightProxy](https://github.com/wallenjos01/MidnightProxy) backends
 ```
-/svs add -b lobby lobby
-/svs add -b survival survival
-/svs add -b creative -P server.creative creative
+/svs add lobby -b lobby 
+/svs add survival -b survival 
+/svs add creative -b creative -P server.creative 
 ```
+
+Editing a server to add a custom item for the GUI:
+```
+/svs edit survival -i minecraft:grass_block[item_name='{"text":"Survival","color":"green"}']
+```
+Hiding a server from the GUI:
+```
+/svs edit creative -g false
+```
+
 
 ## Integration with MidnightProxy
 ServerSwitcher is designed to integrate with [MidnightProxy](https://github.com/wallenjos01/MidnightProxy). It does this

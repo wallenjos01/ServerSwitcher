@@ -13,24 +13,26 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.CommandNode;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.item.ItemArgument;
-import net.minecraft.commands.arguments.item.ItemInput;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.commands.arguments.CompoundTagArgument;
+import net.minecraft.nbt.CompoundTag;
 import org.wallentines.brigpatch.mixin.AccessorCommandContext;
+import org.wallentines.mcore.MidnightCoreAPI;
+import org.wallentines.mcore.UnresolvedItemStack;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.lang.LangManager;
 import org.wallentines.mcore.text.MutableComponent;
 import org.wallentines.mcore.text.WrappedComponent;
+import org.wallentines.mcore.util.NBTContext;
+import org.wallentines.mdcfg.serializer.SerializeResult;
 
 import java.util.Map;
 
 public class ServerSwitcherCommand {
 
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 
         LiteralArgumentBuilder<CommandSourceStack> add = Commands.literal("svs")
                 .requires(Permissions.require("serverswitcher.admin", 4))
@@ -49,7 +51,7 @@ public class ServerSwitcherCommand {
                         dispatcher.register(add)
                                 .getChild("add")
                                 .getChild("server"),
-                        ServerSwitcherCommand::executeAdd, context)
+                        ServerSwitcherCommand::executeAdd)
                 )
             )
             .then(Commands.literal("edit")
@@ -57,7 +59,7 @@ public class ServerSwitcherCommand {
                     dispatcher.register(edit)
                             .getChild("edit")
                             .getChild("server"),
-                    ServerSwitcherCommand::executeEdit, context)
+                    ServerSwitcherCommand::executeEdit)
                 )
             )
             .then(Commands.literal("remove")
@@ -84,47 +86,53 @@ public class ServerSwitcherCommand {
     private static ArgumentBuilder<CommandSourceStack, ?> addFlags(
             ArgumentBuilder<CommandSourceStack, ?> builder,
             CommandNode<CommandSourceStack> redirect,
-            Command<CommandSourceStack> execute,
-            CommandBuildContext context) {
+            Command<CommandSourceStack> execute) {
         return builder
             .then(Commands.literal("-h").then(Commands.argument("host", StringArgumentType.string()).executes(execute).redirect(redirect)))
             .then(Commands.literal("-p").then(Commands.argument("port", IntegerArgumentType.integer(1, 65535)).executes(execute).redirect(redirect)))
             .then(Commands.literal("-b").then(Commands.argument("backend", StringArgumentType.string()).executes(execute).redirect(redirect)))
             .then(Commands.literal("-P").then(Commands.argument("permission", StringArgumentType.string()).executes(execute).redirect(redirect)))
             .then(Commands.literal("-g").then(Commands.argument("in_gui", BoolArgumentType.bool()).executes(execute).redirect(redirect)))
-            .then(Commands.literal("-i").then(Commands.argument("item", ItemArgument.item(context)).executes(execute).redirect(redirect)))
+            .then(Commands.literal("-i").then(Commands.argument("item", CompoundTagArgument.compoundTag()).executes(execute).redirect(redirect)))
             .executes(execute);
     }
 
 
     private static int executeAdd(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcherAPI api = ServerSwitcher.getInstance();
-        String server = ctx.getArgument("server", String.class);
-        ServerInfo inf = readServerInfo(ctx);
+        try {
+            ServerSwitcherAPI api = ServerSwitcher.getInstance();
+            String server = ctx.getArgument("server", String.class);
+            ServerInfo inf = readServerInfo(ctx);
+            if (inf == null) return 0;
 
-        if(inf.hostname() == null && inf.proxyBackend() == null) {
-            ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component("error.not_enough_info")));
+            if (inf.hostname() == null && inf.proxyBackend() == null) {
+                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component("error.not_enough_info")));
+                return 0;
+            }
+
+            api.registerServer(server, inf).thenAccept(res -> {
+
+                if (res == StatusCode.SUCCESS) {
+                    ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.add", CustomPlaceholder.inline("server", server))), true);
+                } else {
+                    ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
+                }
+            });
+
+            return 1;
+
+        } catch (Throwable th) {
+            MidnightCoreAPI.LOGGER.error("An error occurred while adding a server!", th);
             return 0;
         }
-
-        api.registerServer(server, inf).thenAccept(res -> {
-
-            if(res == StatusCode.SUCCESS) {
-                ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.add", CustomPlaceholder.inline("server", server))), true);
-            } else {
-                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
-            }
-        });
-
-        return 1;
-
     }
 
     private static int executeEdit(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
         String server = ctx.getArgument("server", String.class);
         ServerInfo inf = readServerInfo(ctx);
+        if(inf == null) return 0;
 
         api.updateServer(server, inf).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
@@ -205,13 +213,13 @@ public class ServerSwitcherCommand {
 
 
     @SuppressWarnings("unchecked")
-    private static ServerInfo readServerInfo(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static ServerInfo readServerInfo(CommandContext<CommandSourceStack> ctx) {
         String host = null;
         Integer port = null;
         String backend = null;
         String permission = null;
         boolean inGui = true;
-        ItemStack item = null;
+        UnresolvedItemStack item = null;
 
         Map<String, ParsedArgument<CommandSourceStack, ?>> args = ((AccessorCommandContext<CommandSourceStack>) ctx).getArguments();
 
@@ -231,7 +239,16 @@ public class ServerSwitcherCommand {
             inGui = ctx.getArgument("in_gui", Boolean.class);
         }
         if(args.containsKey("item")) {
-            item = ctx.getArgument("item", ItemInput.class).createItemStack(1, false);
+            CompoundTag encodedItem = ctx.getArgument("item", CompoundTag.class);
+
+            SerializeResult<UnresolvedItemStack> uis = UnresolvedItemStack.SERIALIZER.deserialize(NBTContext.INSTANCE, encodedItem);
+            if(!uis.isComplete()) {
+                MidnightCoreAPI.LOGGER.warn("Unable to parse display item! " + uis.getError());
+                ctx.getSource().sendFailure(WrappedComponent.resolved(ServerSwitcher.getInstance().getLangManager().component("error.invalid_item"), ctx.getSource()));
+                return null;
+            }
+
+            item = uis.getOrThrow();
         }
 
         return new ServerInfo(host, port, backend, permission, inGui, item);

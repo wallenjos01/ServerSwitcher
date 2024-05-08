@@ -10,6 +10,7 @@
   "error.already_connected": "You are already connected to that server!",
   "error.server_not_available": "Server %server% is not available!",
   "error.no_servers": "There are no available servers.",
+  "error.invalid_item": "Unable to parse item!",
   "command.add": "Added server %server%",
   "command.edit": "Updated server %server%",
   "command.remove": "Removed server %server%",

@@ -2,6 +2,8 @@ package org.wallentines.serverswitcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wallentines.mcore.InventoryGUI;
+import org.wallentines.mcore.Player;
 import org.wallentines.mcore.lang.LangManager;
 import org.wallentines.mdcfg.sql.Column;
 import org.wallentines.mdcfg.sql.Constraint;
@@ -34,6 +36,9 @@ public abstract class ServerSwitcherAPI {
     public abstract CompletableFuture<StatusCode> registerServer(String server, ServerInfo info);
     public abstract CompletableFuture<StatusCode> updateServer(String server, ServerInfo info);
     public abstract CompletableFuture<StatusCode> removeServer(String server);
+    public abstract boolean sendToServer(Player player, ServerInfo info);
+
+    public abstract InventoryGUI getServerGUI();
 
     public abstract LangManager getLangManager();
 

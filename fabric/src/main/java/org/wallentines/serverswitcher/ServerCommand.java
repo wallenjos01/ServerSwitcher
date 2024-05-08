@@ -13,6 +13,7 @@ import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
 import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.server.level.ServerPlayer;
+import org.wallentines.mcore.Player;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.text.WrappedComponent;
 import org.wallentines.mcore.util.ConversionUtil;
@@ -63,45 +64,12 @@ public class ServerCommand {
         }
 
         ServerPlayer spl = ctx.getSource().getPlayerOrException();
-        if (!sendToServer(spl, inf)) {
+        if (!sw.sendToServer(spl, inf)) {
             ctx.getSource().sendFailure(WrappedComponent.resolved(sw.getLangManager().component("error.server_not_available", CustomPlaceholder.inline("server", serverId)), ctx.getSource()));
             return 0;
         }
 
         return 1;
-    }
-
-    public static boolean sendToServer(ServerPlayer spl, ServerInfo inf) {
-
-        ServerSwitcher sw = (ServerSwitcher) ServerSwitcherAPI.getInstance();
-        ClientIntentionPacket pck = ((HandshakeHolder) ((AccessorPacketListener) spl.connection).getConnection()).getHandshake();
-
-        String hostname = inf.hostname() == null ? pck.hostName() : inf.hostname();
-        int port = inf.port() == null ? pck.port() : inf.port();
-
-        if (inf.proxyBackend() != null) {
-
-            PublicKey key = sw.getKey();
-            if (key == null) {
-                return false;
-            }
-
-            String jwt = JWTUtil.createJWT(
-                    key,
-                    sw.getJWTTimeout(),
-                    hostname,
-                    port,
-                    pck.protocolVersion(),
-                    spl.getUsername(),
-                    spl.getUUID(),
-                    inf.proxyBackend());
-
-            spl.connection.send(new ClientboundStoreCookiePacket(ConversionUtil.toResourceLocation(ServerSwitcherAPI.COOKIE_ID), jwt.getBytes()));
-
-        }
-
-        spl.connection.send(new ClientboundTransferPacket(hostname, port));
-        return true;
     }
 
 }
