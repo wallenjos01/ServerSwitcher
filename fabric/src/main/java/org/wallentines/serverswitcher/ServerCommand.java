@@ -9,19 +9,10 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
-import net.minecraft.network.protocol.common.ClientboundTransferPacket;
-import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.server.level.ServerPlayer;
-import org.wallentines.mcore.Player;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.text.WrappedComponent;
-import org.wallentines.mcore.util.ConversionUtil;
 import org.wallentines.midnightlib.registry.RegistryBase;
-import org.wallentines.serverswitcher.mixin.AccessorPacketListener;
-import org.wallentines.serverswitcher.util.JWTUtil;
-
-import java.security.PublicKey;
 
 public class ServerCommand {
 

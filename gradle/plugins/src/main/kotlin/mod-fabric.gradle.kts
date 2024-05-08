@@ -24,6 +24,9 @@ loom {
             server()
         }
     }
+    mixin {
+        defaultRefmapName = "${rootProject.name}.refmap.json"
+    }
 }
 
 val archiveName: String = Common.getArchiveName(project, rootProject)
@@ -56,4 +59,7 @@ tasks.named<RemapJarTask>("remapJar") {
 tasks.named<RemapSourcesJarTask>("remapSourcesJar") {
     archiveBaseName.set(archiveName)
     archiveClassifier.set("sources")
+}
+tasks.named<ShadowJar>("shadowJar") {
+    enabled = false
 }

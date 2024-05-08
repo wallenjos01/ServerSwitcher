@@ -1,7 +1,6 @@
 package org.wallentines.serverswitcher;
 
 import org.wallentines.mcore.ItemStack;
-import org.wallentines.mcore.Player;
 import org.wallentines.mcore.UnresolvedItemStack;
 import org.wallentines.mcore.text.Component;
 import org.wallentines.mcore.text.TextColor;

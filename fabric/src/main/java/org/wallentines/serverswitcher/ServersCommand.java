@@ -8,7 +8,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
 import org.wallentines.mcore.InventoryGUI;
-import org.wallentines.mcore.ItemStack;
 import org.wallentines.mcore.MidnightCoreAPI;
 import org.wallentines.mcore.UnresolvedItemStack;
 import org.wallentines.mcore.text.WrappedComponent;

@@ -4,10 +4,8 @@ import org.wallentines.mcore.*;
 import org.wallentines.mcore.lang.LangManager;
 import org.wallentines.mcore.lang.LangRegistry;
 import org.wallentines.mcore.sql.SQLModule;
-import org.wallentines.mdcfg.ConfigObject;
 import org.wallentines.mdcfg.ConfigSection;
 import org.wallentines.mdcfg.Functions;
-import org.wallentines.mdcfg.codec.FileWrapper;
 import org.wallentines.mdcfg.serializer.ConfigContext;
 import org.wallentines.mdcfg.serializer.SerializeResult;
 import org.wallentines.mdcfg.sql.Condition;
@@ -16,7 +14,6 @@ import org.wallentines.mdcfg.sql.QueryResult;
 import org.wallentines.mdcfg.sql.SQLConnection;
 import org.wallentines.mdproxy.jwt.FileKeyStore;
 import org.wallentines.mdproxy.jwt.KeyStore;
-import org.wallentines.mdproxy.jwt.KeyType;
 import org.wallentines.midnightlib.registry.Identifier;
 import org.wallentines.midnightlib.registry.RegistryBase;
 import org.wallentines.midnightlib.registry.StringRegistry;
@@ -27,29 +24,17 @@ import java.util.concurrent.CompletableFuture;
 
 public class ServerSwitcher extends ServerSwitcherAPI {
 
-
     public static final Identifier RECONNECT_COOKIE = new Identifier("mdp", "rc");
     private final RegistryBase<String, ServerInfo> serverRegistry;
-    private final FileWrapper<ConfigObject> config;
-    private final KeyStore keyStore;
     private final LangManager langManager;
     private final Functions.F2<Player, ServerInfo, Boolean> sender;
-    private String serverName;
-    private PublicKey key;
-    private boolean clearReconnect;
-    private int jwtTimeout;
+    private final MainConfig mainConfig;
+    private final UpdateManager updateManager;
     private InventoryGUI gui;
 
-    private static final ConfigSection DEFAULT_CONFIG = new ConfigSection()
-            .with("server", "lobby")
-            .with("clear_reconnect_cookie", true)
-            .with("jwt_expire_sec", 5)
-            .with("storage", new ConfigSection()
-                    .with("table_prefix", "svs_"));
 
-    private ServerSwitcher(File configFolder, LangRegistry defaults, Functions.F2<Player, ServerInfo, Boolean> sender) {
+    private ServerSwitcher(Server server, File configFolder, LangRegistry defaults, Functions.F2<Player, ServerInfo, Boolean> sender) {
 
-        this.keyStore = new FileKeyStore(configFolder, FileKeyStore.DEFAULT_TYPES);
         this.sender = sender;
 
         if(!configFolder.isDirectory() && !configFolder.mkdirs()) {
@@ -61,32 +46,24 @@ public class ServerSwitcher extends ServerSwitcherAPI {
             throw new IllegalStateException("Unable to create lang directory!");
         }
 
-        this.config = MidnightCoreAPI.FILE_CODEC_REGISTRY.findOrCreate(ConfigContext.INSTANCE, "config", configFolder, DEFAULT_CONFIG);
-        if(!this.config.getFile().exists()) {
-            this.config.save();
-        }
+        KeyStore keyStore = new FileKeyStore(configFolder, FileKeyStore.DEFAULT_TYPES);
+        this.mainConfig = new MainConfig(configFolder, keyStore);
 
         this.serverRegistry = new StringRegistry<>();
         this.langManager = new LangManager(defaults, langDir);
+        this.updateManager = new UpdateManager(server, this);
 
         reload();
+
+        this.gui = generateGUI();
     }
 
     @Override
     public CompletableFuture<StatusCode> reload() {
 
         this.langManager.reload();
-
-        this.config.load();
-        ConfigSection sec = getConfig();
-
-        this.serverName = sec.getString("server");
-
-        key = keyStore.getKey("key", KeyType.RSA_PUBLIC);
-
-        this.clearReconnect = sec.getBoolean("clear_reconnect_cookie");
-        this.jwtTimeout = sec.getInt("jwt_expire_sec");
-        this.gui = generateGUI();
+        this.mainConfig.reload();
+        this.updateManager.reload(mainConfig.messengerName);
 
         return sync();
     }
@@ -97,16 +74,13 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         return connectDatabase().thenApply(this::sync);
     }
 
-    private ConfigSection getConfig() {
-        return config.getRoot().asSection();
-    }
 
     public RegistryBase<String, ServerInfo> getServerRegistry() {
         return serverRegistry;
     }
 
     public String getServerName() {
-        return serverName;
+        return mainConfig.serverName;
     }
 
     @Override
@@ -132,6 +106,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.INSERT_FAILED;
                 }
 
+                updateManager.sendUpdate();
                 serverRegistry.register(server, info);
                 return StatusCode.SUCCESS;
 
@@ -168,6 +143,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.UPDATE_FAILED;
                 }
 
+                updateManager.sendUpdate();
                 serverRegistry.remove(server);
                 serverRegistry.register(server, info);
 
@@ -204,6 +180,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.DELETE_FAILED;
                 }
 
+                updateManager.sendUpdate();
                 serverRegistry.remove(server);
 
                 return StatusCode.SUCCESS;
@@ -230,6 +207,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     public LangManager getLangManager() {
         return langManager;
     }
+
 
     private StatusCode sync(SQLConnection connection) {
 
@@ -271,7 +249,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
             serverRegistry.register(name, out);
         }
 
-        if(requiresKey && key == null) {
+        if(requiresKey && mainConfig.key == null) {
             LOGGER.warn("There is no public key available in the data folder, but MidnightProxy backend switching was requested! Please put an RSA public key generated by your MidnightProxy server in the data folder in a file called key.pub");
         }
 
@@ -287,7 +265,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
             throw new IllegalStateException("SQL module is not loaded!");
         }
 
-        return sql.connect(getConfig().getSection("storage")).exceptionally(th -> {
+        return sql.connect(mainConfig.getConfig().getSection("storage")).exceptionally(th -> {
             LOGGER.error("An error occurred while connecting to the database!", th);
             return null;
         }).thenApply(conn -> {
@@ -314,13 +292,17 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
         int servers = serverRegistry.getSize();
         int rows = servers / 9;
-        if (servers % 9 != 0) rows++;
+        if (servers % 9 != 0 || servers == 0) rows++;
+
+        // TODO: Paged GUI if there are more than 54 servers
 
         InventoryGUI gui = InventoryGUI.FACTORY.get().build(getLangManager().component("gui.title"), rows);
         int index = 0;
         for (ServerInfo info : serverRegistry) {
             UnresolvedItemStack is = info.itemOrDefault(serverRegistry.getId(info));
             gui.setItem(index, is, (player, type) -> sendToServer(player, info));
+            LOGGER.warn("Set item " + index);
+            index++;
         }
         gui.update();
 
@@ -336,11 +318,11 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
 
     public PublicKey getKey() {
-        return key;
+        return mainConfig.key;
     }
 
-    public static void init(File configFolder, LangRegistry registry, Functions.F2<Player, ServerInfo, Boolean> sender) {
-        INSTANCE.set(new ServerSwitcher(configFolder, registry, sender));
+    public static void init(Server server, File configFolder, LangRegistry registry, Functions.F2<Player, ServerInfo, Boolean> sender) {
+        INSTANCE.set(new ServerSwitcher(server, configFolder, registry, sender));
     }
 
     public static void shutdown() {
@@ -348,11 +330,11 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     }
 
     public boolean shouldClearReconnect() {
-        return clearReconnect;
+        return mainConfig.clearReconnect;
     }
 
     public int getJWTTimeout() {
-        return jwtTimeout;
+        return mainConfig.jwtTimeout;
     }
 
 }

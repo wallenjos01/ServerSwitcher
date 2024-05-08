@@ -24,11 +24,11 @@ public class Init implements ModInitializer {
     @Override
     public void onInitialize() {
 
-        Server.START_EVENT.register(this, ev -> {
+        Server.START_EVENT.register(this, srv -> {
 
             try {
                 LangRegistry reg = LangRegistry.fromConfig(JSONCodec.loadConfig(getClass().getResourceAsStream("/serverswitcher/en_us.json")).asSection(), PlaceholderManager.INSTANCE);
-                ServerSwitcher.init(ev.getConfigDirectory().resolve("ServerSwitcher").toFile(), reg, Init::sendToServer);
+                ServerSwitcher.init(srv, srv.getConfigDirectory().resolve("ServerSwitcher").toFile(), reg, Init::sendToServer);
             } catch (IOException e) {
                 throw new IllegalStateException("Unable to find lang defaults in the mod jar!", e);
             }
