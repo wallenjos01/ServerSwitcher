@@ -24,7 +24,6 @@ import org.wallentines.mcore.UnresolvedItemStack;
 import org.wallentines.mcore.lang.CustomPlaceholder;
 import org.wallentines.mcore.lang.LangManager;
 import org.wallentines.mcore.text.MutableComponent;
-import org.wallentines.mcore.text.WrappedComponent;
 import org.wallentines.mcore.util.NBTContext;
 import org.wallentines.mdcfg.serializer.SerializeResult;
 
@@ -107,16 +106,16 @@ public class ServerSwitcherCommand {
             if (inf == null) return 0;
 
             if (inf.hostname() == null && inf.proxyBackend() == null) {
-                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component("error.not_enough_info")));
+                ctx.getSource().sendFailure(api.getLangManager().component("error.not_enough_info"));
                 return 0;
             }
 
             api.registerServer(server, inf).thenAccept(res -> {
 
                 if (res == StatusCode.SUCCESS) {
-                    ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.add", CustomPlaceholder.inline("server", server))), true);
+                    ctx.getSource().sendSuccess(api.getLangManager().component("command.add", CustomPlaceholder.inline("server", server)), true);
                 } else {
-                    ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
+                    ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
                 }
             });
 
@@ -136,9 +135,9 @@ public class ServerSwitcherCommand {
 
         api.updateServer(server, inf).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
-                ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.edit", CustomPlaceholder.inline("server", server))), true);
+                ctx.getSource().sendSuccess(api.getLangManager().component("command.edit", CustomPlaceholder.inline("server", server)), true);
             } else {
-                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
+                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
             }
 
         });
@@ -152,9 +151,9 @@ public class ServerSwitcherCommand {
 
         api.removeServer(server).thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
-                ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.remove", CustomPlaceholder.inline("server", server))), true);
+                ctx.getSource().sendSuccess(api.getLangManager().component("command.remove", CustomPlaceholder.inline("server", server)), true);
             } else {
-                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
+                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
             }
         });
 
@@ -166,16 +165,13 @@ public class ServerSwitcherCommand {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
         LangManager manager = api.getLangManager();
 
-        ctx.getSource().sendSuccess(() -> {
+        MutableComponent out = MutableComponent.empty();
+        for(String id : api.getServerRegistry().getIds()) {
+            out.addChild(org.wallentines.mcore.text.Component.text("\n"));
+            out.addChild(manager.component("command.list.entry", CustomPlaceholder.inline("id", id)).resolveFor(ctx.getSource()));
+        }
 
-            MutableComponent out = MutableComponent.empty();
-            for(String id : api.getServerRegistry().getIds()) {
-                out.addChild(org.wallentines.mcore.text.Component.text("\n"));
-                out.addChild(manager.component("command.list.entry", CustomPlaceholder.inline("id", id)));
-            }
-
-            return WrappedComponent.resolved(manager.component("command.list", CustomPlaceholder.of("ids", out.toComponent())));
-        }, false);
+        ctx.getSource().sendSuccess(manager.component("command.list", CustomPlaceholder.of("ids", out.toComponent())), false);
 
         return 1;
     }
@@ -187,9 +183,9 @@ public class ServerSwitcherCommand {
 
         api.sync().thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
-                ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.sync")), true);
+                ctx.getSource().sendSuccess(api.getLangManager().component("command.sync"), true);
             } else {
-                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
+                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
             }
         });
 
@@ -202,9 +198,9 @@ public class ServerSwitcherCommand {
 
         api.reload().thenAccept(res -> {
             if(res == StatusCode.SUCCESS) {
-                ctx.getSource().sendSuccess(() -> WrappedComponent.resolved(api.getLangManager().component("command.reload")), true);
+                ctx.getSource().sendSuccess(api.getLangManager().component("command.reload"), true);
             } else {
-                ctx.getSource().sendFailure(WrappedComponent.resolved(api.getLangManager().component(res.langKey)));
+                ctx.getSource().sendFailure(api.getLangManager().component(res.langKey));
             }
         });
 
@@ -244,7 +240,7 @@ public class ServerSwitcherCommand {
             SerializeResult<UnresolvedItemStack> uis = UnresolvedItemStack.SERIALIZER.deserialize(NBTContext.INSTANCE, encodedItem);
             if(!uis.isComplete()) {
                 MidnightCoreAPI.LOGGER.warn("Unable to parse display item! " + uis.getError());
-                ctx.getSource().sendFailure(WrappedComponent.resolved(ServerSwitcher.getInstance().getLangManager().component("error.invalid_item"), ctx.getSource()));
+                ctx.getSource().sendFailure(ServerSwitcher.getInstance().getLangManager().component("error.invalid_item"));
                 return null;
             }
 

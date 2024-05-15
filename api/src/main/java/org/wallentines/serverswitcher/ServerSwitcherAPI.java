@@ -2,9 +2,9 @@ package org.wallentines.serverswitcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wallentines.mcore.InventoryGUI;
 import org.wallentines.mcore.Player;
 import org.wallentines.mcore.lang.LangManager;
+import org.wallentines.mcore.InventoryGUI;
 import org.wallentines.mdcfg.sql.Column;
 import org.wallentines.mdcfg.sql.Constraint;
 import org.wallentines.mdcfg.sql.DataType;

@@ -11,7 +11,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.level.ServerPlayer;
 import org.wallentines.mcore.lang.CustomPlaceholder;
-import org.wallentines.mcore.text.WrappedComponent;
 import org.wallentines.midnightlib.registry.RegistryBase;
 
 public class ServerCommand {
@@ -42,7 +41,7 @@ public class ServerCommand {
         ServerSwitcher sw = (ServerSwitcher) ServerSwitcher.getInstance();
 
         if(serverId.equals(sw.getServerName())) {
-            ctx.getSource().sendFailure(WrappedComponent.resolved(sw.getLangManager().component("error.already_connected"), ctx.getSource()));
+            ctx.getSource().sendFailure(sw.getLangManager().component("error.already_connected"));
             return 0;
         }
 
@@ -50,13 +49,13 @@ public class ServerCommand {
 
         ServerInfo inf = reg.get(serverId);
         if (inf == null) {
-            ctx.getSource().sendFailure(WrappedComponent.resolved(sw.getLangManager().component("error.server_not_exists"), ctx.getSource()));
+            ctx.getSource().sendFailure(sw.getLangManager().component("error.server_not_exists"));
             return 0;
         }
 
         ServerPlayer spl = ctx.getSource().getPlayerOrException();
         if (!sw.sendToServer(spl, inf)) {
-            ctx.getSource().sendFailure(WrappedComponent.resolved(sw.getLangManager().component("error.server_not_available", CustomPlaceholder.inline("server", serverId)), ctx.getSource()));
+            ctx.getSource().sendFailure(sw.getLangManager().component("error.server_not_available", CustomPlaceholder.inline("server", serverId)));
             return 0;
         }
 

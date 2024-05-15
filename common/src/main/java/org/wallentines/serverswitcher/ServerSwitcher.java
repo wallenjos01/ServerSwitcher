@@ -4,6 +4,8 @@ import org.wallentines.mcore.*;
 import org.wallentines.mcore.lang.LangManager;
 import org.wallentines.mcore.lang.LangRegistry;
 import org.wallentines.mcore.sql.SQLModule;
+import org.wallentines.mcore.text.TextColor;
+import org.wallentines.mcore.InventoryGUI;
 import org.wallentines.mdcfg.ConfigSection;
 import org.wallentines.mdcfg.Functions;
 import org.wallentines.mdcfg.serializer.ConfigContext;
@@ -49,7 +51,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         KeyStore keyStore = new FileKeyStore(configFolder, FileKeyStore.DEFAULT_TYPES);
         this.mainConfig = new MainConfig(configFolder, keyStore);
 
-        this.serverRegistry = new StringRegistry<>();
+        this.serverRegistry = new StringRegistry<>(false, false, true);
         this.langManager = new LangManager(defaults, langDir);
         this.updateManager = new UpdateManager(server, this);
 
@@ -106,8 +108,9 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.INSERT_FAILED;
                 }
 
-                updateManager.sendUpdate();
                 serverRegistry.register(server, info);
+
+                updateManager.sendUpdate();
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -143,10 +146,10 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.UPDATE_FAILED;
                 }
 
-                updateManager.sendUpdate();
                 serverRegistry.remove(server);
                 serverRegistry.register(server, info);
 
+                updateManager.sendUpdate();
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -180,9 +183,9 @@ public class ServerSwitcher extends ServerSwitcherAPI {
                     return StatusCode.DELETE_FAILED;
                 }
 
-                updateManager.sendUpdate();
                 serverRegistry.remove(server);
 
+                updateManager.sendUpdate();
                 return StatusCode.SUCCESS;
 
             } catch (Throwable ex) {
@@ -200,7 +203,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
     @Override
     public InventoryGUI getServerGUI() {
-        return null;
+        return gui;
     }
 
     @Override
@@ -290,18 +293,43 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
     private InventoryGUI generateGUI() {
 
-        int servers = serverRegistry.getSize();
-        int rows = servers / 9;
-        if (servers % 9 != 0 || servers == 0) rows++;
+        RegistryBase<String, ServerInfo> guiServers = new StringRegistry<>();
+        for(String key : serverRegistry.getIds()) {
+            ServerInfo si = serverRegistry.get(key);
+            if(si == null) continue;
 
-        // TODO: Paged GUI if there are more than 54 servers
+            if(si.inGUI()) {
+                guiServers.register(key, si);
+            }
+        }
+        guiServers = guiServers.freeze();
+        int servers = guiServers.getSize();
 
-        InventoryGUI gui = InventoryGUI.FACTORY.get().build(getLangManager().component("gui.title"), rows);
+        InventoryGUI gui;
+
+        if(servers <= 54) {
+
+            gui = InventoryGUI.create(getLangManager().component("gui.title"), servers);
+
+        } else {
+
+            UnresolvedItemStack next = new UnresolvedItemStack(ItemStack.Builder.glassPaneWithColor(TextColor.GREEN), getLangManager().component("gui.next_page"), null);
+            UnresolvedItemStack prev = new UnresolvedItemStack(ItemStack.Builder.glassPaneWithColor(TextColor.GREEN), getLangManager().component("gui.prev_page"), null);
+
+            PagedInventoryGUI pGui = InventoryGUI.createPaged(getLangManager().component("gui.title.paged"), PagedInventoryGUI.SizeProvider.dynamic(5), servers);
+            pGui.addBottomReservedRow(PagedInventoryGUI.RowProvider.pageControls(next, prev));
+
+            gui = pGui;
+
+        }
+
         int index = 0;
-        for (ServerInfo info : serverRegistry) {
-            UnresolvedItemStack is = info.itemOrDefault(serverRegistry.getId(info));
-            gui.setItem(index, is, (player, type) -> sendToServer(player, info));
-            LOGGER.warn("Set item " + index);
+        for (ServerInfo si : guiServers) {
+
+            String id = guiServers.getId(si);
+
+            UnresolvedItemStack is = si.itemOrDefault(id);
+            gui.setItem(index, is, (player, type) -> sendToServer(player, si));
             index++;
         }
         gui.update();

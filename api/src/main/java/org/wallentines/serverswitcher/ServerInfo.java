@@ -9,12 +9,15 @@ import org.wallentines.mdcfg.serializer.ObjectSerializer;
 import org.wallentines.mdcfg.serializer.Serializer;
 import org.wallentines.midnightlib.math.Color;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public record ServerInfo(String hostname, Integer port, String proxyBackend, String permission, boolean inGUI, UnresolvedItemStack item) {
+
 
     public static final Serializer<ServerInfo> SERIALIZER = ObjectSerializer.create(
             Serializer.STRING.entry("hostname", ServerInfo::hostname).optional(),
             Serializer.INT.entry("port", ServerInfo::port).optional(),
-            Serializer.STRING.entry("proxy_backend", ServerInfo::proxyBackend).optional(),
+            Serializer.STRING.entry("backend", ServerInfo::proxyBackend).optional(),
             Serializer.STRING.entry("permission", ServerInfo::proxyBackend).optional(),
             Serializer.BOOLEAN.entry("in_gui", ServerInfo::inGUI).orElse(true),
             UnresolvedItemStack.SERIALIZER.mapToBlob(new BinaryCodec(BinaryCodec.Compression.ZSTD)).entry("item", ServerInfo::item).optional(),
@@ -24,7 +27,9 @@ public record ServerInfo(String hostname, Integer port, String proxyBackend, Str
     public UnresolvedItemStack itemOrDefault(String serverId) {
 
         if(item == null) {
-            return new UnresolvedItemStack(ItemStack.Builder.woolWithColor(Color.WHITE).withName(Component.text(serverId).withColor(TextColor.AQUA)), null, null);
+
+            Component name = serverId == null ? Component.empty() : Component.text(serverId);
+            return new UnresolvedItemStack(ItemStack.Builder.woolWithColor(Color.WHITE).withName(name.withColor(TextColor.AQUA)), null, null);
         }
         return item;
     }

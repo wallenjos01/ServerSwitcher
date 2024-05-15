@@ -24,7 +24,7 @@ dependencies {
 
     // MidnightCore
     modApi(libs.midnight.core.fabric)
-    modApi(include("org.wallentines:brigadier-argument-fix:1.0.0")!!)
+    modApi(include("org.wallentines:brigadier-argument-fix:1.0.1")!!)
 
     // JWT
     modApi(libs.midnight.proxy.jwt)

@@ -1,7 +1,7 @@
 [versions]
 junit = "5.9.1"
 mdcfg = "2.3.0-SNAPSHOT"
-mdlib = "1.6.0"
+mdlib = "1.6.1-SNAPSHOT"
 mcore = "2.0.0-SNAPSHOT"
 mdp = "0.3.0"
 slf4j = "2.0.11"

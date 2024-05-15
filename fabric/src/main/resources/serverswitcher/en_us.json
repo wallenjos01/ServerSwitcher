@@ -18,5 +18,8 @@
   "command.reload": "ServerSwitcher reloaded",
   "command.list.entry": " &7- &f%id%",
   "command.list": "Registered Servers: %ids%",
-  "gui.title": "Select a Server"
+  "gui.title": "Select a Server",
+  "gui.title.paged": "Select a Server (%gui_page%/%gui_pages%)",
+  "gui.next_page": "Next Page",
+  "gui.prev_page": "Previous Page"
 }
