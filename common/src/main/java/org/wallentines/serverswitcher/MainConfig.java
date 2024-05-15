@@ -19,6 +19,7 @@ class MainConfig {
             .with("clear_reconnect_cookie", true)
             .with("jwt_expire_sec", 5)
             .with("messenger", "default")
+            .with("proxy_type", ProxyType.NONE.getId())
             .with("storage", new ConfigSection()
                     .with("table_prefix", "svs_"));
 
@@ -30,6 +31,7 @@ class MainConfig {
     boolean clearReconnect;
     int jwtTimeout;
     String messengerName;
+    ProxyType proxyType;
 
     public MainConfig(File configFolder, KeyStore keyStore) {
 
@@ -54,7 +56,9 @@ class MainConfig {
         this.clearReconnect = sec.getBoolean("clear_reconnect_cookie");
         this.jwtTimeout = sec.getInt("jwt_expire_sec");
 
-        this.messengerName = sec.getOrDefault("messenger", (String) null);
+        this.messengerName = sec.getString("messenger");
+
+        this.proxyType = ProxyType.byId(sec.getString("proxyType"));
     }
 
     public ConfigSection getConfig() {

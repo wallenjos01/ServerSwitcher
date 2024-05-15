@@ -31,13 +31,13 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     public static final Identifier RECONNECT_COOKIE = new Identifier("mdp", "rc");
     private final RegistryBase<String, ServerInfo> serverRegistry;
     private final LangManager langManager;
-    private final Functions.F2<Player, ServerInfo, Boolean> sender;
+    private final Functions.F3<ProxyType, Player, ServerInfo, Boolean> sender;
     private final MainConfig mainConfig;
     private final UpdateManager updateManager;
     private InventoryGUI gui;
 
 
-    private ServerSwitcher(Server server, File configFolder, LangRegistry defaults, Functions.F2<Player, ServerInfo, Boolean> sender) {
+    private ServerSwitcher(Server server, File configFolder, LangRegistry defaults, Functions.F3<ProxyType, Player, ServerInfo, Boolean> sender) {
 
         this.sender = sender;
 
@@ -200,7 +200,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
     @Override
     public boolean sendToServer(Player player, ServerInfo info) {
-        return sender.apply(player, info);
+        return sender.apply(getProxyType(), player, info);
     }
 
     @Override
@@ -211,6 +211,11 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     @Override
     public LangManager getLangManager() {
         return langManager;
+    }
+
+    @Override
+    public ProxyType getProxyType() {
+        return mainConfig.proxyType;
     }
 
 
@@ -349,7 +354,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         return mainConfig.key;
     }
 
-    public static void init(Server server, File configFolder, LangRegistry registry, Functions.F2<Player, ServerInfo, Boolean> sender) {
+    public static void init(Server server, File configFolder, LangRegistry registry, Functions.F3<ProxyType, Player, ServerInfo, Boolean> sender) {
         INSTANCE.set(new ServerSwitcher(server, configFolder, registry, sender));
     }
 

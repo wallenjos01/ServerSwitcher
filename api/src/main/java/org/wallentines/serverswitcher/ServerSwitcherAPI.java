@@ -41,6 +41,7 @@ public abstract class ServerSwitcherAPI {
     public abstract InventoryGUI getServerGUI();
 
     public abstract LangManager getLangManager();
+    public abstract ProxyType getProxyType();
 
     public static final Integer SCHEMA_VERSION = 1;
 
