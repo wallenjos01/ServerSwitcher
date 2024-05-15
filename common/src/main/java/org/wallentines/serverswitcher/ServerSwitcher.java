@@ -22,6 +22,8 @@ import org.wallentines.midnightlib.registry.StringRegistry;
 
 import java.io.File;
 import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ServerSwitcher extends ServerSwitcherAPI {
@@ -293,17 +295,16 @@ public class ServerSwitcher extends ServerSwitcherAPI {
 
     private InventoryGUI generateGUI() {
 
-        RegistryBase<String, ServerInfo> guiServers = new StringRegistry<>();
+        List<ServerInfo> infos = new ArrayList<>();
         for(String key : serverRegistry.getIds()) {
             ServerInfo si = serverRegistry.get(key);
             if(si == null) continue;
 
             if(si.inGUI()) {
-                guiServers.register(key, si);
+                infos.add(si);
             }
         }
-        guiServers = guiServers.freeze();
-        int servers = guiServers.getSize();
+        int servers = infos.size();
 
         InventoryGUI gui;
 
@@ -324,10 +325,9 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         }
 
         int index = 0;
-        for (ServerInfo si : guiServers) {
+        for (ServerInfo si : infos) {
 
-            String id = guiServers.getId(si);
-
+            String id = serverRegistry.getId(si);
             UnresolvedItemStack is = si.itemOrDefault(id);
             gui.setItem(index, is, (player, type) -> sendToServer(player, si));
             index++;

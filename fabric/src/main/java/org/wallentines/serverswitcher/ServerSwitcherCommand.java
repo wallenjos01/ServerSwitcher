@@ -54,7 +54,7 @@ public class ServerSwitcherCommand {
                 )
             )
             .then(Commands.literal("edit")
-                .then(addFlags(Commands.argument("server", StringArgumentType.word()),
+                .then(addFlags(Commands.argument("server", StringArgumentType.word()).suggests(SUGGEST_ALL_SERVERS),
                     dispatcher.register(edit)
                             .getChild("edit")
                             .getChild("server"),
@@ -69,6 +69,12 @@ public class ServerSwitcherCommand {
             )
             .then(Commands.literal("list")
                 .executes(ServerSwitcherCommand::executeList)
+            )
+            .then(Commands.literal("info")
+                .then(Commands.argument("server", StringArgumentType.word())
+                    .suggests(SUGGEST_ALL_SERVERS)
+                    .executes(ServerSwitcherCommand::executeInfo)
+                )
             )
             .then(Commands.literal("sync")
                 .executes(ServerSwitcherCommand::executeSync)
@@ -172,6 +178,18 @@ public class ServerSwitcherCommand {
         }
 
         ctx.getSource().sendSuccess(manager.component("command.list", CustomPlaceholder.of("ids", out.toComponent())), false);
+
+        return 1;
+    }
+
+    private static int executeInfo(CommandContext<CommandSourceStack> ctx) {
+
+        ServerSwitcherAPI api = ServerSwitcher.getInstance();
+        LangManager manager = api.getLangManager();
+        String server = ctx.getArgument("server", String.class);
+        ServerInfo si = api.getServerRegistry().get(server);
+
+        ctx.getSource().sendSuccess(manager.component("command.info", si, CustomPlaceholder.inline("server", server)), false);
 
         return 1;
     }

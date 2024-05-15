@@ -55,6 +55,10 @@ public class Init implements ModInitializer {
 
     }
 
+    static {
+        ServerInfo.registerPlaceholders(PlaceholderManager.INSTANCE);
+    }
+
 
     private static boolean sendToServer(Player player, ServerInfo inf) {
 

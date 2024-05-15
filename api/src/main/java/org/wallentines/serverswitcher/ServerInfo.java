@@ -2,14 +2,14 @@ package org.wallentines.serverswitcher;
 
 import org.wallentines.mcore.ItemStack;
 import org.wallentines.mcore.UnresolvedItemStack;
+import org.wallentines.mcore.lang.PlaceholderManager;
+import org.wallentines.mcore.lang.PlaceholderSupplier;
 import org.wallentines.mcore.text.Component;
 import org.wallentines.mcore.text.TextColor;
 import org.wallentines.mdcfg.codec.BinaryCodec;
 import org.wallentines.mdcfg.serializer.ObjectSerializer;
 import org.wallentines.mdcfg.serializer.Serializer;
 import org.wallentines.midnightlib.math.Color;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 public record ServerInfo(String hostname, Integer port, String proxyBackend, String permission, boolean inGUI, UnresolvedItemStack item) {
 
@@ -32,6 +32,16 @@ public record ServerInfo(String hostname, Integer port, String proxyBackend, Str
             return new UnresolvedItemStack(ItemStack.Builder.woolWithColor(Color.WHITE).withName(name.withColor(TextColor.AQUA)), null, null);
         }
         return item;
+    }
+
+    public static void registerPlaceholders(PlaceholderManager manager) {
+
+        manager.registerSupplier("server_info_hostname", PlaceholderSupplier.inline(ctx -> ctx.onValueOr(ServerInfo.class, ServerInfo::hostname, "")));
+        manager.registerSupplier("server_info_port", PlaceholderSupplier.inline(ctx -> ctx.onValueOr(ServerInfo.class, si -> si.port == null ? "" : si.port.toString(), "")));
+        manager.registerSupplier("server_info_backend", PlaceholderSupplier.inline(ctx -> ctx.onValueOr(ServerInfo.class, ServerInfo::proxyBackend, "")));
+        manager.registerSupplier("server_info_permission", PlaceholderSupplier.inline(ctx -> ctx.onValueOr(ServerInfo.class, ServerInfo::permission, "")));
+        manager.registerSupplier("server_info_in_gui", PlaceholderSupplier.inline(ctx -> ctx.onValueOr(ServerInfo.class, ServerInfo::inGUI, true).toString()));
+
     }
 
 

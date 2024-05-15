@@ -18,6 +18,7 @@
   "command.reload": "ServerSwitcher reloaded",
   "command.list.entry": " &7- &f%id%",
   "command.list": "Registered Servers: %ids%",
+  "command.info": "Info for %server%:\n - Host: %server_info_hostname%\n - Port: %server_info_port%\n - Backend: %server_info_backend%\n - Permission: %server_info_permission%\n - In GUI: %server_info_in_gui%",
   "gui.title": "Select a Server",
   "gui.title.paged": "Select a Server (%gui_page%/%gui_pages%)",
   "gui.next_page": "Next Page",
