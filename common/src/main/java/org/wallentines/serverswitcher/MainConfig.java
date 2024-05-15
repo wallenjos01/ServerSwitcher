@@ -15,13 +15,13 @@ class MainConfig {
 
 
     private static final ConfigSection DEFAULT_CONFIG = new ConfigSection()
-            .with("server", "lobby")
-            .with("clear_reconnect_cookie", true)
-            .with("jwt_expire_sec", 5)
-            .with("messenger", "default")
+            .with("server", "server")
             .with("proxy_type", ProxyType.NONE.getId())
+            .with("messenger", "default")
             .with("storage", new ConfigSection()
-                    .with("table_prefix", "svs_"));
+                    .with("table_prefix", "svs_"))
+            .with("clear_reconnect_cookie", true)
+            .with("jwt_expire_sec", 5);
 
     private final FileWrapper<ConfigObject> config;
     private final KeyStore keyStore;

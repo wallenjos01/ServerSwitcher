@@ -3,7 +3,13 @@ A Fabric mod for switching servers via transfer packets.
 
 ## Usage
 This mod requires the MidnightCore SQL module to be loaded. Enable it with `/mcore module enable sql` and load it with
-`/mcore module load sql`. Once the module is loaded, reload ServerSwitcher with `/svs reload`
+`/mcore module load sql`. <br/>
+Optionally, the MidnightCore Messenger module will be used to automatically cause all servers to sync when the database is
+updated. Enable it with `/mcore module enable messenger` and load it with `/mcore module load messenger`. <br/>
+For use with BungeeCord, the MidnightCore plugin message module must also be loaded. It is enabled by default, but to be
+sure, enable it with `/mcore module enable plugin_message` and load it with `/mcore module load plugin_message`. <br/>
+
+Once the desired modules are loaded, reload ServerSwitcher with `/svs reload`
 
 ### Commands
 To switch to another server: `/server <name>` <br/>
@@ -13,6 +19,7 @@ To add a server: `/svs add <name> [-h <hostname> | -p <port> | -b <backend> | -P
 To remove a server: `/svs remove <name>`<br/>
 To edit a server: `/svs edit <name> [-h <hostname> | -p <port> | -b <backend> | -P <permission> | -g <in_gui> | -i <item>]` <br/>
 To list all servers in all namespaces: `/svs list` <br/>
+To get info about a server: `/svs info <name>` <br/>
 To sync the database: `/svs sync` <br/>
 To reload the configuration: `/svs reload` <br/>
 
@@ -24,8 +31,10 @@ To reload the configuration: `/svs reload` <br/>
 ## Configuration
 The root of the config file is a section with 4 keys:
 - `server`: The name of the server this mod installed on.
+- `proxy_type`: The type of proxy to use for backend switching. May be `none`, `midnightproxy`, or `bungeecord`
 - `storage`: Configuration for the MidnightCore SQL module. Will use the `default` preset by default, with a table prefix of 
 `svs_`. See [MidnightCore](https://github.com/wallenjos01/MidnightCore) for more information.
+- `messenger`: The name of the MidnightCore messenger to use. Only applicable if the messenger module is loaded.
 - `jwt_expire_sec`: Only relevant when used with [MidnightProxy](https://github.com/wallenjos01/MidnightProxy). Determines
 how long switch cookies should remain valid. 
 - `clear_reconnect_cookie`: Only relevant when used with [MidnightProxy](https://github.com/wallenjos01/MidnightProxy).
@@ -48,7 +57,7 @@ Adding servers for a network which switch based on port
 /svs add creative -h server.net -p 25568 -P server.creative
 ```
 
-Adding servers for a network which switch based on [MidnightProxy](https://github.com/wallenjos01/MidnightProxy) backends
+Adding servers for a network which switch based on proxy backends
 ```
 /svs add lobby -b lobby 
 /svs add survival -b survival 
@@ -57,7 +66,7 @@ Adding servers for a network which switch based on [MidnightProxy](https://githu
 
 Editing a server to add a custom item for the GUI:
 ```
-/svs edit survival -i minecraft:grass_block[item_name='{"text":"Survival","color":"green"}']
+/svs edit survival -i {"id":"minecraft:grass_block","name":"{\"text\":\"Survival\",\"color\":\"green\"}"]
 ```
 Hiding a server from the GUI:
 ```
