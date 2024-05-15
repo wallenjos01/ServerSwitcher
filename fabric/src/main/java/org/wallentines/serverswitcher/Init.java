@@ -35,9 +35,7 @@ public class Init implements ModInitializer {
 
         });
 
-        Server.STOP_EVENT.register(this, ev -> {
-            ServerSwitcher.shutdown();
-        });
+        Server.STOP_EVENT.register(this, ev -> ServerSwitcher.shutdown());
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             ServerCommand.register(dispatcher);

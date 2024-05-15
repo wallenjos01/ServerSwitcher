@@ -2,18 +2,11 @@ package org.wallentines.serverswitcher;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.server.level.ServerPlayer;
-import org.wallentines.mcore.InventoryGUI;
 import org.wallentines.mcore.MidnightCoreAPI;
-import org.wallentines.mcore.UnresolvedItemStack;
-import org.wallentines.mcore.util.ConversionUtil;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ServersCommand {
 
@@ -24,7 +17,7 @@ public class ServersCommand {
         );
     }
 
-    public static int execute(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    public static int execute(CommandContext<CommandSourceStack> ctx) {
 
         try {
             ServerSwitcherAPI api = ServerSwitcherAPI.getInstance();

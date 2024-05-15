@@ -103,7 +103,7 @@ public class ServerSwitcherCommand {
     }
 
 
-    private static int executeAdd(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static int executeAdd(CommandContext<CommandSourceStack> ctx) {
 
         try {
             ServerSwitcherAPI api = ServerSwitcher.getInstance();
@@ -133,7 +133,7 @@ public class ServerSwitcherCommand {
         }
     }
 
-    private static int executeEdit(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+    private static int executeEdit(CommandContext<CommandSourceStack> ctx) {
         ServerSwitcherAPI api = ServerSwitcher.getInstance();
         String server = ctx.getArgument("server", String.class);
         ServerInfo inf = readServerInfo(ctx);
