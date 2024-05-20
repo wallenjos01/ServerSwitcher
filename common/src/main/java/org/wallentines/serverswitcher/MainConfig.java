@@ -58,7 +58,7 @@ class MainConfig {
 
         this.messengerName = sec.getString("messenger");
 
-        this.proxyType = ProxyType.byId(sec.getString("proxyType"));
+        this.proxyType = ProxyType.byId(sec.getString("proxy_type"));
     }
 
     public ConfigSection getConfig() {
