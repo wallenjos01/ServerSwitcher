@@ -1,20 +1,12 @@
 [versions]
-junit = "5.9.1"
-mdcfg = "2.3.0-SNAPSHOT"
-mdlib = "1.6.1-SNAPSHOT"
-mcore = "2.0.0-SNAPSHOT"
+mdcfg = "2.4.0"
+mdlib = "1.7.0"
+mcore = "2.0.0-pre8"
 mdp = "0.3.0"
 slf4j = "2.0.11"
 jbr-anno = "24.0.1"
 
-shadow = "8.1.1"
-loom = "1.6-SNAPSHOT"
-multiversion = "0.2.1"
-patch = "0.2.0"
-
 [libraries]
-junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 midnight-cfg = { module = "org.wallentines:midnightcfg-api", version.ref="mdcfg" }
 midnight-cfg-sql = { module = "org.wallentines:midnightcfg-api-sql", version.ref="mdcfg" }
 midnight-cfg-json = { module = "org.wallentines:midnightcfg-codec-json", version.ref="mdcfg" }
@@ -28,11 +20,5 @@ midnight-core-fabric = { module = "org.wallentines:midnightcore-fabric", version
 midnight-proxy = { module = "org.wallentines:midnightproxy-api", version.ref="mdp" }
 midnight-proxy-jwt = { module = "org.wallentines:midnightproxy-api-jwt", version.ref="mdp" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
-slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref="jbr-anno" }
 
-[plugins]
-shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
-loom = { id = "fabric-loom", version.ref = "loom" }
-multiversion = { id = "org.wallentines.gradle-multi-version", version.ref="multiversion" }
-patch = { id = "org.wallentines.gradle-patch", version.ref="patch" }

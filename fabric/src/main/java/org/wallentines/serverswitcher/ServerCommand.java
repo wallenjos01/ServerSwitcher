@@ -11,7 +11,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.server.level.ServerPlayer;
 import org.wallentines.mcore.lang.CustomPlaceholder;
-import org.wallentines.midnightlib.registry.RegistryBase;
+import org.wallentines.midnightlib.registry.Registry;
 
 public class ServerCommand {
 
@@ -45,7 +45,7 @@ public class ServerCommand {
             return 0;
         }
 
-        RegistryBase<String, ServerInfo> reg = sw.getServerRegistry();
+        Registry<String, ServerInfo> reg = sw.getServerRegistry();
 
         ServerInfo inf = reg.get(serverId);
         if (inf == null) {

@@ -17,8 +17,7 @@ import org.wallentines.mdcfg.sql.SQLConnection;
 import org.wallentines.mdproxy.jwt.FileKeyStore;
 import org.wallentines.mdproxy.jwt.KeyStore;
 import org.wallentines.midnightlib.registry.Identifier;
-import org.wallentines.midnightlib.registry.RegistryBase;
-import org.wallentines.midnightlib.registry.StringRegistry;
+import org.wallentines.midnightlib.registry.Registry;
 
 import java.io.File;
 import java.security.PublicKey;
@@ -29,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
 public class ServerSwitcher extends ServerSwitcherAPI {
 
     public static final Identifier RECONNECT_COOKIE = new Identifier("mdp", "rc");
-    private final RegistryBase<String, ServerInfo> serverRegistry;
+    private final Registry<String, ServerInfo> serverRegistry;
     private final LangManager langManager;
     private final Functions.F3<ProxyType, Player, ServerInfo, Boolean> sender;
     private final MainConfig mainConfig;
@@ -53,7 +52,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
         KeyStore keyStore = new FileKeyStore(configFolder, FileKeyStore.DEFAULT_TYPES);
         this.mainConfig = new MainConfig(configFolder, keyStore);
 
-        this.serverRegistry = new StringRegistry<>(false, false, true);
+        this.serverRegistry = Registry.createStringRegistry(false, false, true);
         this.langManager = new LangManager(defaults, langDir);
         this.updateManager = new UpdateManager(server, this);
 
@@ -79,7 +78,7 @@ public class ServerSwitcher extends ServerSwitcherAPI {
     }
 
 
-    public RegistryBase<String, ServerInfo> getServerRegistry() {
+    public Registry<String, ServerInfo> getServerRegistry() {
         return serverRegistry;
     }
 
