@@ -1,0 +1,8 @@
+{
+  "name": "server",
+  "type": "builder",
+  "value": "org.wallentines.serverswitcher.ServerCommand::build",
+  "state_object": "serverswitcher:state",
+  "permission_level": 2,
+  "permission_node": "serverswitcher.command.server"
+}

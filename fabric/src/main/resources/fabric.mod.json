@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "${id}",
+  "version": "${version}",
+  "mixins": [
+    "serverswitcher.mixins.json"
+  ]
+}

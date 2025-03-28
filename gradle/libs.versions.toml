@@ -1,0 +1,36 @@
+[versions]
+junit = "5.10.2"
+slf4j = "2.0.16"
+jbr-anno = "24.0.1"
+midnightcfg = "3.2.0"
+jwtutil = "0.1.0"
+pseudonym = "0.2.0"
+smi = "0.3.0"
+databridge = "0.6.0"
+cookies = "0.1.0"
+invmenu = "0.1.0"
+
+[libraries]
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref="jbr-anno" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+midnightcfg = { module = "org.wallentines:midnightcfg-api", version.ref = "midnightcfg"}
+midnightcfg-sql = { module = "org.wallentines:midnightcfg-api-sql", version.ref = "midnightcfg"}
+midnightcfg-codec-binary = { module = "org.wallentines:midnightcfg-codec-binary", version.ref = "midnightcfg"}
+midnightcfg-minecraft = { module = "org.wallentines:midnightcfg-platform-minecraft", version.ref = "midnightcfg"}
+
+databridge = { module = "org.wallentines:databridge", version.ref = "databridge"}
+cookieapi = { module = "org.wallentines:fabric-cookie-api", version.ref = "cookies"}
+
+smi = { module = "org.wallentines:smi-api", version.ref = "smi" }
+
+jwtutil = { module = "org.wallentines:jwtutil-api", version.ref = "jwtutil" }
+
+pseudonym = { module = "org.wallentines:pseudonym-api", version.ref = "pseudonym" }
+pseudonym-lang = { module = "org.wallentines:pseudonym-lang", version.ref = "pseudonym" }
+pseudonym-minecraft = { module = "org.wallentines:pseudonym-minecraft", version.ref = "pseudonym" }
+
+inventorymenus = { module = "org.wallentines:inventory-menus", version.ref = "invmenu"}

@@ -1,0 +1,8 @@
+{
+  "name": "ss",
+  "type": "builder",
+  "value": "org.wallentines.serverswitcher.AdminCommand::build",
+  "state_object": "serverswitcher:state",
+  "permission_level": 4,
+  "permission_node": "serverswitcher.admin"
+}

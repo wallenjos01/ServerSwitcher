@@ -1,0 +1,5 @@
+{
+  "type": "org.wallentines.serverswitcher.ServerSwitcher$Holder",
+  "factory": "org.wallentines.serverswitcher.ServerSwitcher::create",
+  "destructor": "org.wallentines.serverswitcher.ServerSwitcher::destroy"
+}

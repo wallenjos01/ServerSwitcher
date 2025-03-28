@@ -1,0 +1,19 @@
+{
+  "command.error.invalid_server": "That is not a valid server!",
+  "command.error.add": "Unable to add server",
+  "command.error.invalid_item": "That is not a valid display item!",
+  "command.error.sync": "Unable to sync with database!",
+  "command.add": "Server %server_name% added",
+  "command.remove": "Server %server_name% removed",
+  "command.edit": "Server %server_name% updated",
+  "command.reload": "ServerSwitcher configuration reloaded",
+  "command.sync": "ServerSwitcher database synchronized.",
+  "message.join": "&e%player_name% joined the game in %server_name%",
+  "message.leave": "&e%player_name% left the game",
+  "message.transfer": "&e%player_name% traveled to %server_name%",
+  "message.server_hover": "Click to travel to %server_name%",
+  "gui.title": "Servers",
+  "tab.entry": "&8[%server_prefix%&8] &f%display_name%",
+  "text.unknown_server": "&7Unknown",
+  "text.unknown_prefix": "&7?"
+}
