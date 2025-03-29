@@ -24,9 +24,9 @@ import org.wallentines.mdcfg.ConfigSection;
 import org.wallentines.mdcfg.codec.BinaryCodec;
 import org.wallentines.mdcfg.mc.api.ConfigOps;
 import org.wallentines.mdcfg.mc.api.RegistryContext;
+import org.wallentines.mdcfg.registry.Registry;
 import org.wallentines.mdcfg.serializer.*;
 import org.wallentines.mdcfg.sql.*;
-import org.wallentines.midnightlib.registry.Registry;
 import org.wallentines.pseudonym.mc.api.ConfigTextParser;
 
 import java.io.ByteArrayOutputStream;

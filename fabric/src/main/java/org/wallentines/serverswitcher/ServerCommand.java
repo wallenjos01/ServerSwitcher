@@ -22,7 +22,7 @@ import org.wallentines.jwt.CryptCodec;
 import org.wallentines.jwt.JWTBuilder;
 import org.wallentines.jwt.KeyCodec;
 import org.wallentines.jwt.KeyType;
-import org.wallentines.midnightlib.registry.Registry;
+import org.wallentines.mdcfg.registry.Registry;
 import org.wallentines.pseudonym.lang.LocaleHolder;
 
 import java.nio.charset.StandardCharsets;

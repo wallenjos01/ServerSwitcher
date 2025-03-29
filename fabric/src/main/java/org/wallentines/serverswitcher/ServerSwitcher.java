@@ -27,9 +27,9 @@ import org.wallentines.mdcfg.ConfigObject;
 import org.wallentines.mdcfg.codec.FileWrapper;
 import org.wallentines.mdcfg.mc.api.ServerConfigFolders;
 import org.wallentines.mdcfg.mc.api.ServerSQLManager;
+import org.wallentines.mdcfg.registry.Registry;
 import org.wallentines.mdcfg.serializer.ConfigContext;
 import org.wallentines.mdcfg.sql.SQLConnection;
-import org.wallentines.midnightlib.registry.Registry;
 import org.wallentines.pseudonym.*;
 import org.wallentines.pseudonym.lang.LangManager;
 import org.wallentines.pseudonym.lang.LangProvider;
@@ -149,7 +149,11 @@ public class ServerSwitcher {
         this.config = MainConfig.SERIALIZER.deserialize(ConfigContext.INSTANCE, configFile.getRoot()).getOrThrow();
 
         sync().thenAccept(_ignored -> {
-            messenger = MessengerManager.getMessenger(config.messenger());
+            try {
+                messenger = MessengerManager.getMessenger(config.messenger());
+            } catch (Throwable ex) {
+                LOGGER.error("Unable to initialize messenger!", ex);
+            }
             if(messenger != null) {
                 messenger.subscribe(UpdateMessage.CHANNEL, this, msg -> {
                     long updated = UpdateMessage.decode(msg.payload).time();
@@ -201,9 +205,12 @@ public class ServerSwitcher {
     public void pushUpdate() {
         UpdateMessage msg = new UpdateMessage(System.currentTimeMillis());
         if(messenger != null) {
-            messenger.publish(msg.toMessage());
+            try {
+                messenger.publish(msg.toMessage());
+            } catch (Exception ex) {
+                LOGGER.error("Unable to push update message!", ex);
+            }
         }
-        lastUpdated = msg.time();
         sync();
     }
 
@@ -251,21 +258,18 @@ public class ServerSwitcher {
 
             switch (msg.type()) {
                 case LEAVE: {
-                    server.getPlayerList().getPlayers().forEach(pl -> {
-                        pl.sendSystemMessage(lang.getMessageFor("message.leave", ((LocaleHolder) pl).getLanguage(), ctx));
-                    });
+                    server.getPlayerList().getPlayers().forEach(pl ->
+                            pl.sendSystemMessage(lang.getMessageFor("message.leave", ((LocaleHolder) pl).getLanguage(), ctx)));
                     break;
                 }
                 case JOIN: {
-                    server.getPlayerList().getPlayers().forEach(pl -> {
-                        pl.sendSystemMessage(lang.getMessageFor("message.join", ((LocaleHolder) pl).getLanguage(), ctx));
-                    });
+                    server.getPlayerList().getPlayers().forEach(pl ->
+                            pl.sendSystemMessage(lang.getMessageFor("message.join", ((LocaleHolder) pl).getLanguage(), ctx)));
                     break;
                 }
                 case TRANSFER: {
-                    server.getPlayerList().getPlayers().forEach(pl -> {
-                        pl.sendSystemMessage(lang.getMessageFor("message.transfer", ((LocaleHolder) pl).getLanguage(), ctx));
-                    });
+                    server.getPlayerList().getPlayers().forEach(pl ->
+                            pl.sendSystemMessage(lang.getMessageFor("message.transfer", ((LocaleHolder) pl).getLanguage(), ctx)));
                     break;
                 }
             }
@@ -366,7 +370,7 @@ public class ServerSwitcher {
     static {
 
         PlaceholderManager placeholders = ServerPlaceholders.getGlobalPlaceholders();
-        placeholders.register(new Placeholder<>("2", Component.class, ctx ->
+        placeholders.register(new Placeholder<>("server_name", Component.class, ctx ->
                 ctx.context().getFirst(ServerInfo.class).map(ServerInfo::getName).or(() ->
                         ctx.context().getFirst(MinecraftServer.class).map(server ->
                         ServerSwitcher.getInstance(server)
