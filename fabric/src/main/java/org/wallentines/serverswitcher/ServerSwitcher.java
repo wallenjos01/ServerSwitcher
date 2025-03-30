@@ -91,6 +91,7 @@ public class ServerSwitcher {
                 .add("command.error.add", "Unable to add server")
                 .add("command.error.invalid_item", "That is not a valid display item!")
                 .add("command.error.sync", "Unable to sync with database!")
+                .add("command.error.db", "An error occurred while writing to the database!")
                 .add("command.add", "Server <server_name> added")
                 .add("command.remove", "Server <server_name> removed")
                 .add("command.edit", "Server <server_name> updated")
@@ -194,7 +195,13 @@ public class ServerSwitcher {
     }
 
     public CompletableFuture<SQLConnection> connectDatabase() {
-        return ServerSQLManager.getPresetRegistry(server).connect(configFile.getRoot().asSection().getSection("db"));
+        return ServerSQLManager.getPresetRegistry(server)
+                .connect(configFile.getRoot().asSection().getSection("db"))
+                .whenComplete((conn, th) -> {
+                    if(th != null) {
+                        LOGGER.error("An error occurred while communicating with the database!", th);
+                    }
+                });
     }
 
     @Nullable

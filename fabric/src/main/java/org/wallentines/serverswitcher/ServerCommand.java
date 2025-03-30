@@ -26,6 +26,7 @@ import org.wallentines.mdcfg.registry.Registry;
 import org.wallentines.pseudonym.lang.LocaleHolder;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class ServerCommand {
@@ -83,7 +84,10 @@ public class ServerCommand {
 
         if(server.backend() != null) {
             String token = new JWTBuilder()
+                    .withClaim("username", spl.getGameProfile().getName())
+                    .withClaim("uuid", spl.getGameProfile().getId().toString())
                     .withClaim("backend", server.backend())
+                    .withClaim("token_id", UUID.randomUUID().toString())
                     .issuedNow()
                     .expiresIn(60L)
                     .encrypted(KeyCodec.RSA_OAEP(ss.getKeyStore().getKey("proxy", KeyType.RSA_PUBLIC)), CryptCodec.A256CBC_HS512())

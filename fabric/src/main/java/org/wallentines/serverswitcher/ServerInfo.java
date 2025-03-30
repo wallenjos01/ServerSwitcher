@@ -220,8 +220,15 @@ public record ServerInfo(int id, String name, String address, short port, @Nulla
 
     public static Registry<String, ServerInfo> queryAll(MinecraftServer server, SQLConnection connection) {
 
-        QueryResult res = connection.select(Tables.SERVER_NAME).execute();
         Registry<String, ServerInfo> out = Registry.createStringRegistry();
+        QueryResult res;
+        try {
+            res = connection.select(Tables.SERVER_NAME).execute();
+        } catch (Exception ex) {
+            log.error("Unable to query the database!", ex);
+            return out;
+        }
+
         for(int i = 0 ; i < res.rows() ; i++) {
             SerializeResult<ServerInfo> infoRes = SERIALIZER.deserialize(new RegistryContext<>(ConfigContext.INSTANCE, server.registryAccess()), res.get(i).toConfigSection());
             if(infoRes.isComplete()) {

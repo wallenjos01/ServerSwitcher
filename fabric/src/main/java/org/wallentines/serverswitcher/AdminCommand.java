@@ -135,15 +135,11 @@ public class AdminCommand {
 
     private int executeAddPort(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        try {
-            String name = StringArgumentType.getString(ctx, "server");
-            String address = StringArgumentType.getString(ctx, "address");
-            short port = (short) IntegerArgumentType.getInteger(ctx, "port");
+        String name = StringArgumentType.getString(ctx, "server");
+        String address = StringArgumentType.getString(ctx, "address");
+        short port = (short) IntegerArgumentType.getInteger(ctx, "port");
 
-            doAdd(name, address, port, ctx.getSource());
-        } catch (Throwable th) {
-            log.error("Unable to add to the database!", th);
-        }
+        doAdd(name, address, port, ctx.getSource());
 
         return 1;
     }
@@ -153,14 +149,21 @@ public class AdminCommand {
         ServerSwitcher ss = data.get().get();
         ss.connectDatabase().thenAccept(sql -> {
 
-            ServerInfo info = ServerInfo.insert(name, address, port, sql);
-            if (info == null) {
-                sender.sendFailure(ss.getLangManager().getMessage("command.error.add", sender.getEntity()));
+            ServerInfo info;
+            try {
+                info = ServerInfo.insert(name, address, port, sql);
+                if (info == null) {
+                    sender.sendFailure(ss.getLangManager().getMessage("command.error.add", sender.getEntity()));
+                    return;
+                }
+            } catch (Throwable th) {
+                log.error("Unable to add to the database!", th);
+                sender.sendFailure(ss.getLangManager().getMessage("command.error.db", sender.getEntity()));
                 return;
             }
 
-            ss.pushUpdate();
             sender.sendSuccess(() -> ss.getLangManager().getMessage("command.add", sender.getEntity(), info), false);
+            ss.pushUpdate();
 
         });
     }
@@ -172,9 +175,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.remove(si, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.remove(si, sql);
+            } catch (Throwable th) {
+                log.error("Unable to remove from the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.remove", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -189,9 +198,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updateAddress(si.id(), address, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updateAddress(si.id(), address, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -206,9 +221,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updatePort(si.id(), (short) port, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updatePort(si.id(), (short) port, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -221,9 +242,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updatePermission(si.id(), null, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updatePermission(si.id(), null, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -238,9 +265,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updatePermission(si.id(), permission, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updatePermission(si.id(), permission, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -254,9 +287,15 @@ public class AdminCommand {
 
         ss.connectDatabase().thenAccept(sql -> {
             ServerInfo info = new ServerInfo(si.id(), si.name(), si.address(), si.port(), null, si.permission(), si.displayName(), si.prefix(), si.icon());
-            ServerInfo.updateBackend(info.id(), null, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updateBackend(info.id(), null, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), info), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -271,9 +310,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updateBackend(si.id(), backend, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updateBackend(si.id(), backend, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -286,7 +331,13 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updateDisplayName(si.id(), null, sql);
+            try {
+                ServerInfo.updateDisplayName(si.id(), null, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ss.pushUpdate();
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
         });
@@ -304,9 +355,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updateDisplayName(si.id(), display, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updateDisplayName(si.id(), display, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -319,9 +376,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updatePrefix(si.id(), null, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updatePrefix(si.id(), null, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -337,9 +400,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updatePrefix(si.id(), display, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updatePrefix(si.id(), display, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -352,9 +421,15 @@ public class AdminCommand {
         if(si == null) return 0;
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updateIcon(si.id(), null, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updateIcon(si.id(), null, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
@@ -378,9 +453,15 @@ public class AdminCommand {
         ItemStack is = in.createItemStack(count, false);
 
         ss.connectDatabase().thenAccept(sql -> {
-            ServerInfo.updateIcon(si.id(), is, sql);
-            ss.pushUpdate();
+            try {
+                ServerInfo.updateIcon(si.id(), is, sql);
+            } catch (Throwable th) {
+                log.error("Unable to edit the database!", th);
+                ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.db", ctx.getSource().getEntity()));
+                return;
+            }
             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.edit", ctx.getSource().getEntity(), si), false);
+            ss.pushUpdate();
         });
 
         return 1;
