@@ -58,7 +58,7 @@ public class ServerSwitcher {
 
     private final MinecraftServer server;
     private final FileWrapper<ConfigObject> configFile;
-    private final LangManager<UnresolvedMessage<String>, Component> lang;
+    private final LangManager<PartialMessage<String>, Component> lang;
     private final KeyStore keyStore;
     private final GlobalPlayerList globalPlayerList;
     private MainConfig config;
@@ -85,8 +85,8 @@ public class ServerSwitcher {
         this.configFile = ServerConfigFolders.FILE_CODEC_REGISTRY.findOrCreate(ConfigContext.INSTANCE, "config", dataFolder, MainConfig.DEFAULT_CONFIG);
 
         PlaceholderManager placeholders = ServerPlaceholders.getServerPlaceholders(server);
-        MessagePipeline<String, UnresolvedMessage<String>> parser = MessagePipeline.parser(placeholders);
-        LangRegistry<UnresolvedMessage<String>> langDefaults = LangRegistry.builder(parser)
+        MessagePipeline<String, PartialMessage<String>> parser = MessagePipeline.parser(placeholders);
+        LangRegistry<PartialMessage<String>> langDefaults = LangRegistry.builder(parser)
                 .add("command.error.invalid_server", "That is not a valid server!")
                 .add("command.error.add", "Unable to add server")
                 .add("command.error.invalid_item", "That is not a valid display item!")
@@ -118,7 +118,7 @@ public class ServerSwitcher {
         return config;
     }
 
-    public LangManager<UnresolvedMessage<String>, Component> getLangManager() {
+    public LangManager<PartialMessage<String>, Component> getLangManager() {
         return lang;
     }
 
