@@ -322,57 +322,21 @@ public class ServerSwitcher {
 
     private static final ResourceLocation STATE_OBJECT = ResourceLocation.tryBuild("serverswitcher", "state");
     public static ServerSwitcher getInstance(MinecraftServer server) {
-        return ServerStateObjects.getStateObject(server, Holder.class, STATE_OBJECT).orElseThrow().get();
+        return ServerStateObjects.getStateObject(server, ServerSwitcher.class, STATE_OBJECT).orElseThrow();
     }
 
     public static Optional<ServerSwitcher> getOptional(MinecraftServer server) {
-        return ServerStateObjects.getStateObject(server, Holder.class, STATE_OBJECT).filter(Holder::isInitialized).map(Holder::get);
+        return ServerStateObjects.getStateObject(server, ServerSwitcher.class, STATE_OBJECT);
     }
 
-    public static class Holder {
-        ServerSwitcher internal;
 
-        private Holder() { }
-
-        private void init(MinecraftServer server) {
-            destroy();
-            this.internal = new ServerSwitcher(server);
-        }
-
-        private boolean isInitialized() {
-            return internal != null;
-        }
-
-        private void destroy() {
-            if(internal == null) return;
-            internal.unregisterMessenger();
-            internal = null;
-        }
-
-        public ServerSwitcher get() {
-            assert internal != null;
-            return internal;
-        }
+    public static ServerSwitcher create(MinecraftServer server, @Nullable ServerSwitcher previous) {
+        return new ServerSwitcher(server);
     }
 
-    public static Holder create(ReloadableServerResources resources, ReloadableServerRegistries.LoadResult loadResult, ResourceManager resourceManager, @Nullable ServerSwitcher.Holder previous) {
-        return new Holder();
+    public static void destroy(MinecraftServer server, ServerSwitcher instance) {
+        instance.unregisterMessenger();
     }
-
-    public static void destroy(Holder holder) {
-        holder.destroy();
-    }
-
-    public static void init(CommandSourceStack css,
-                            CompoundTag tag,
-                            ResourceLocation id,
-                            CommandDispatcher<CommandSourceStack> dispatcher,
-                            ExecutionContext<CommandSourceStack> ctx,
-                            Frame frame,
-                            Holder data) {
-        data.init(css.getServer());
-    }
-
 
     static {
 

@@ -1,5 +1,0 @@
-{
-  "type": "method",
-  "value": "org.wallentines.serverswitcher.ServerSwitcher::init",
-  "state_object": "serverswitcher:state"
-}

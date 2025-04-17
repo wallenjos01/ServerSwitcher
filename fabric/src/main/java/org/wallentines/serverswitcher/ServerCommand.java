@@ -32,9 +32,9 @@ import java.util.function.Supplier;
 public class ServerCommand {
 
 
-    private final Supplier<ServerSwitcher.Holder> data;
+    private final Supplier<ServerSwitcher> data;
 
-    private ServerCommand(Supplier<ServerSwitcher.Holder> data) {
+    private ServerCommand(Supplier<ServerSwitcher> data) {
         this.data = data;
     }
 
@@ -42,7 +42,7 @@ public class ServerCommand {
         return builder
                 .then(Commands.argument("server", StringArgumentType.word())
                         .suggests((ctx, sb) -> {
-                            Registry<String, ServerInfo> inf = data.get().get().getServers();
+                            Registry<String, ServerInfo> inf = data.get().getServers();
                             return SharedSuggestionProvider.suggest(inf.valueStream().filter(si -> si.canUse(ctx.getSource())).map(inf::getId), sb);
                         })
                         .executes(this::executeServer)
@@ -50,13 +50,13 @@ public class ServerCommand {
                 .executes(this::executeServerGui);
     }
 
-    public static LiteralArgumentBuilder<CommandSourceStack> build(String id, LiteralArgumentBuilder<CommandSourceStack> builder, CommandBuildContext buildCtx, Supplier<ServerSwitcher.Holder> data) {
+    public static LiteralArgumentBuilder<CommandSourceStack> build(String id, LiteralArgumentBuilder<CommandSourceStack> builder, CommandBuildContext buildCtx, Supplier<ServerSwitcher> data) {
         return new ServerCommand(data).build(builder);
     }
 
     private int executeServer(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         String serverId = StringArgumentType.getString(ctx, "server");
         ServerInfo server = ss.getServers().get(serverId);
 
@@ -103,7 +103,7 @@ public class ServerCommand {
 
     private int executeServerGui(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerPlayer spl = ctx.getSource().getPlayerOrException();
 
         Registry<String, ServerInfo> servers = ss.getServers();

@@ -22,9 +22,9 @@ import java.util.function.Supplier;
 public class AdminCommand {
 
     private static final Logger log = LoggerFactory.getLogger(AdminCommand.class);
-    private final Supplier<ServerSwitcher.Holder> data;
+    private final Supplier<ServerSwitcher> data;
 
-    private AdminCommand(Supplier<ServerSwitcher.Holder> data) {
+    private AdminCommand(Supplier<ServerSwitcher> data) {
         this.data = data;
     }
 
@@ -32,7 +32,7 @@ public class AdminCommand {
         return builder
                 .then(Commands.literal("reload")
                         .executes(ctx -> {
-                            ServerSwitcher ss = data.get().get();
+                            ServerSwitcher ss = data.get();
                             ss.reload();
                             ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.reload", ctx.getSource().getEntity()), false);
                             return 1;
@@ -40,7 +40,7 @@ public class AdminCommand {
                 )
                 .then(Commands.literal("sync")
                         .executes(ctx -> {
-                            ServerSwitcher ss = data.get().get();
+                            ServerSwitcher ss = data.get();
                             ss.sync().whenComplete((_ignored, err) -> {
                                 if(err == null) {
                                     ctx.getSource().sendSuccess(() -> ss.getLangManager().getMessage("command.sync", ctx.getSource().getEntity()), false);
@@ -70,7 +70,7 @@ public class AdminCommand {
                 .then(Commands.literal("edit")
                         .then(Commands.argument("server", StringArgumentType.word())
                                 .suggests((ctx, sb) -> {
-                                    ServerSwitcher ss = data.get().get();
+                                    ServerSwitcher ss = data.get();
                                     return SharedSuggestionProvider.suggest(ss.getServers().idStream(), sb);
                                 })
                                 .then(Commands.literal("address")
@@ -120,7 +120,7 @@ public class AdminCommand {
                 );
     }
 
-    public static LiteralArgumentBuilder<CommandSourceStack> build(String id, LiteralArgumentBuilder<CommandSourceStack> builder, CommandBuildContext buildCtx, Supplier<ServerSwitcher.Holder> data) {
+    public static LiteralArgumentBuilder<CommandSourceStack> build(String id, LiteralArgumentBuilder<CommandSourceStack> builder, CommandBuildContext buildCtx, Supplier<ServerSwitcher> data) {
         return new AdminCommand(data).build(builder, buildCtx);
     }
 
@@ -146,7 +146,7 @@ public class AdminCommand {
 
     private void doAdd(String name, String address, short port, CommandSourceStack sender) {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ss.connectDatabase().thenAccept(sql -> {
 
             ServerInfo info;
@@ -170,7 +170,7 @@ public class AdminCommand {
 
     private int executeRemove(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -193,7 +193,7 @@ public class AdminCommand {
 
         String address = StringArgumentType.getString(ctx, "address");
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -216,7 +216,7 @@ public class AdminCommand {
 
         int port = IntegerArgumentType.getInteger(ctx, "port");
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -237,7 +237,7 @@ public class AdminCommand {
 
     private int executeRemovePermission(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -260,7 +260,7 @@ public class AdminCommand {
 
         String permission = StringArgumentType.getString(ctx, "permission");
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -281,7 +281,7 @@ public class AdminCommand {
 
     private int executeRemoveBackend(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -305,7 +305,7 @@ public class AdminCommand {
 
         String backend = StringArgumentType.getString(ctx, "backend");
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -326,7 +326,7 @@ public class AdminCommand {
 
     private int executeRemoveName(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -350,7 +350,7 @@ public class AdminCommand {
         String text = StringArgumentType.getString(ctx, "text");
         Component display = ConfigTextParser.INSTANCE.parse(text);
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -371,7 +371,7 @@ public class AdminCommand {
 
     private int executeRemovePrefix(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -395,7 +395,7 @@ public class AdminCommand {
         String text = StringArgumentType.getString(ctx, "text");
         Component display = ConfigTextParser.INSTANCE.parse(text);
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -416,7 +416,7 @@ public class AdminCommand {
 
     private int executeRemoveIcon(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -445,7 +445,7 @@ public class AdminCommand {
 
     private int doEditIcon(CommandContext<CommandSourceStack> ctx, int count) throws CommandSyntaxException {
 
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = getServerInfo(ctx);
         if(si == null) return 0;
 
@@ -470,7 +470,7 @@ public class AdminCommand {
     private ServerInfo getServerInfo(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
 
         String name = StringArgumentType.getString(ctx, "server");
-        ServerSwitcher ss = data.get().get();
+        ServerSwitcher ss = data.get();
         ServerInfo si = ss.getServers().get(name);
 
         if(si == null) {

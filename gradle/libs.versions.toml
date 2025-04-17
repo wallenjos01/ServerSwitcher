@@ -6,7 +6,7 @@ midnightcfg = "3.2.0"
 jwtutil = "0.1.0"
 pseudonym = "0.3.0"
 smi = "0.3.0"
-databridge = "0.7.0"
+databridge = "0.8.0"
 cookies = "0.1.0"
 invmenu = "0.2.0"
 
