@@ -1,20 +1,12 @@
 package org.wallentines.serverswitcher;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.execution.ExecutionContext;
-import net.minecraft.commands.execution.Frame;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ReloadableServerRegistries;
-import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.level.GameType;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -260,7 +252,8 @@ public class ServerSwitcher {
         if(config.globalTab()) {
             PipelineContext ctx = PipelineContext.builder()
                     .add(servers.get(msg.server()))
-                    .withContextPlaceholder("player_name", msg.profile().getName())
+                    .add(new DummyPlayer(server, msg.profile()))
+                    .withContextPlaceholder("display_name", msg.profile().getName())
                     .build();
 
             switch (msg.type()) {
