@@ -31,7 +31,6 @@ import java.util.function.Supplier;
 
 public class ServerCommand {
 
-
     private final Supplier<ServerSwitcher> data;
 
     private ServerCommand(Supplier<ServerSwitcher> data) {
@@ -43,14 +42,16 @@ public class ServerCommand {
                 .then(Commands.argument("server", StringArgumentType.word())
                         .suggests((ctx, sb) -> {
                             Registry<String, ServerInfo> inf = data.get().getServers();
-                            return SharedSuggestionProvider.suggest(inf.valueStream().filter(si -> si.canUse(ctx.getSource())).map(inf::getId), sb);
+                            return SharedSuggestionProvider.suggest(
+                                    inf.valueStream().filter(si -> si.canUse(ctx.getSource())).map(inf::getId), sb);
                         })
-                        .executes(this::executeServer)
-                )
+                        .executes(this::executeServer))
                 .executes(this::executeServerGui);
     }
 
-    public static LiteralArgumentBuilder<CommandSourceStack> build(String id, LiteralArgumentBuilder<CommandSourceStack> builder, CommandBuildContext buildCtx, Supplier<ServerSwitcher> data) {
+    public static LiteralArgumentBuilder<CommandSourceStack> build(String id,
+            LiteralArgumentBuilder<CommandSourceStack> builder, CommandBuildContext buildCtx,
+            Supplier<ServerSwitcher> data) {
         return new ServerCommand(data).build(builder);
     }
 
@@ -60,8 +61,9 @@ public class ServerCommand {
         String serverId = StringArgumentType.getString(ctx, "server");
         ServerInfo server = ss.getServers().get(serverId);
 
-        if(server == null || !server.canUse(ctx.getSource())) {
-            ctx.getSource().sendFailure(ss.getLangManager().getMessage("command.error.invalid_server", ctx.getSource().getEntity()));
+        if (server == null || !server.canUse(ctx.getSource())) {
+            ctx.getSource().sendFailure(
+                    ss.getLangManager().getMessage("command.error.invalid_server", ctx.getSource().getEntity()));
             return 0;
         }
 
@@ -82,7 +84,7 @@ public class ServerCommand {
 
         PlayerCookies.setCookie(spl, ServerSwitcher.SWITCH_COOKIE, cookie.getBytes(StandardCharsets.UTF_8));
 
-        if(server.backend() != null) {
+        if (server.backend() != null) {
             String token = new JWTBuilder()
                     .withClaim("username", spl.getGameProfile().getName())
                     .withClaim("uuid", spl.getGameProfile().getId().toString())
@@ -90,7 +92,8 @@ public class ServerCommand {
                     .withClaim("token_id", UUID.randomUUID().toString())
                     .issuedNow()
                     .expiresIn(60L)
-                    .encrypted(KeyCodec.RSA_OAEP(ss.getKeyStore().getKey("proxy", KeyType.RSA_PUBLIC)), CryptCodec.A256CBC_HS512())
+                    .encrypted(KeyCodec.RSA_OAEP(ss.getKeyStore().getKey("proxy", KeyType.RSA_PUBLIC)),
+                            CryptCodec.A256CBC_HS512())
                     .asString()
                     .getOrThrow();
 
@@ -110,12 +113,11 @@ public class ServerCommand {
 
         InventoryMenu gui;
 
-        if(servers.getSize() > 6 * 9) {
-            PagedInventoryMenu pgui = PagedInventoryMenu.create(pCtx ->
-                    ss.getLangManager().getMessage(
-                            "gui.title",
-                            pCtx.getFirst(LocaleHolder.class).map(LocaleHolder::getLanguage).orElse(null),
-                            pCtx),
+        if (servers.getSize() > 6 * 9) {
+            PagedInventoryMenu pgui = PagedInventoryMenu.create(pCtx -> ss.getLangManager().getMessage(
+                    "gui.title",
+                    pCtx.getFirst(LocaleHolder.class).map(LocaleHolder::getLanguage).orElse(null),
+                    pCtx),
                     PagedInventoryMenu.SizeProvider.dynamic(6));
 
             pgui.addBottomReservedRow(PagedInventoryMenu.RowProvider.pageControls(
@@ -124,16 +126,15 @@ public class ServerCommand {
                             .build()),
                     iCtx -> new ItemStack(Holder.direct(Items.RED_STAINED_GLASS_PANE), 1, DataComponentPatch.builder()
                             .set(DataComponents.ITEM_NAME, ss.getLangManager().getMessageFor("gui.prev", iCtx))
-                            .build())
-            ));
+                            .build())));
             gui = pgui;
         } else {
             gui = InventoryMenu.create(pCtx -> ss.getLangManager().getMessageFor("gui.title", pCtx), servers.getSize());
         }
 
         int index = 0;
-        for(ServerInfo server : servers.values()) {
-            if(server.canUse(spl)) {
+        for (ServerInfo server : servers.values()) {
+            if (server.canUse(spl)) {
                 gui.setItem(index++, server.getDisplay(spl), (player, type) -> transfer(spl, server, ss));
             }
         }
@@ -142,6 +143,5 @@ public class ServerCommand {
 
         return 1;
     }
-
 
 }
