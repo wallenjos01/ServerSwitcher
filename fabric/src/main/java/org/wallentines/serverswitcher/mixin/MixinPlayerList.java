@@ -49,12 +49,12 @@ public class MixinPlayerList {
 
                 PipelineContext ctx = PipelineContext.builder()
                         .add(ss.getServers().get(e.server()))
-                        .withContextPlaceholder("display_name", e.profile().getName())
+                        .withContextPlaceholder("display_name", e.profile().name())
                         .build();
 
                 ClientboundPlayerInfoUpdatePacket pck = new ClientboundPlayerInfoUpdatePacket(actions, List.of());
                 ClientboundPlayerInfoUpdatePacket.Entry ent = new ClientboundPlayerInfoUpdatePacket.Entry(
-                        e.profile().getId(),
+                        e.profile().id(),
                         e.profile(),
                         true,
                         0,

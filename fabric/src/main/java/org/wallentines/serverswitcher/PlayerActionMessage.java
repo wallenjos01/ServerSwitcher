@@ -1,6 +1,8 @@
 package org.wallentines.serverswitcher;
 
+import com.google.common.collect.ImmutableMultimap;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -9,6 +11,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import org.wallentines.smi.Message;
 
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.UUID;
 
 public record PlayerActionMessage(Type type, GameProfile profile, String server) {
@@ -20,11 +23,11 @@ public record PlayerActionMessage(Type type, GameProfile profile, String server)
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
         buf.writeByte(type.ordinal());
 
-        buf.writeUUID(profile.getId());
-        buf.writeUtf(profile.getName());
+        buf.writeUUID(profile.id());
+        buf.writeUtf(profile.name());
 
         if (type != Type.LEAVE) {
-            ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(buf, profile.getProperties());
+            ByteBufCodecs.GAME_PROFILE_PROPERTIES.encode(buf, profile.properties());
         }
 
         buf.writeUtf(server);
@@ -51,11 +54,15 @@ public record PlayerActionMessage(Type type, GameProfile profile, String server)
         UUID playerId = buf.readUUID();
         String name = buf.readUtf();
 
-        GameProfile profile = new GameProfile(playerId, name);
+        ImmutableMultimap.Builder<String, Property> builder = ImmutableMultimap.builder();
         if(t != Type.LEAVE) {
             PropertyMap map = ByteBufCodecs.GAME_PROFILE_PROPERTIES.decode(buf);
-            profile.getProperties().putAll(map);
+            for(Map.Entry<String, Property> entry : map.entries()) {
+                builder.put(entry.getKey(), entry.getValue());
+            }
         }
+
+        GameProfile profile = new GameProfile(playerId, name, new PropertyMap(builder.build()));
 
         String server = buf.readUtf();
         return new PlayerActionMessage(t, profile, server);

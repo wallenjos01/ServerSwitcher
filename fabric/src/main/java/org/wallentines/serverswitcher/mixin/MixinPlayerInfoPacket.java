@@ -23,7 +23,7 @@ public class MixinPlayerInfoPacket {
 
         if(players.isEmpty()) return original.call(actions, players);
 
-        ServerSwitcher ss = ServerSwitcher.getInstance(players.iterator().next().getServer());
+        ServerSwitcher ss = ServerSwitcher.getInstance(players.iterator().next().level().getServer());
         ClientboundPlayerInfoUpdatePacket pck = original.call(actions, players);
 
         if(!ss.getConfig().globalTab()) return pck;
@@ -33,7 +33,7 @@ public class MixinPlayerInfoPacket {
 
             Component displayName;
             if(e.displayName() == null) {
-                displayName = Component.literal(e.profile().getName());
+                displayName = Component.literal(e.profile().name());
             } else {
                 displayName = e.displayName();
             }

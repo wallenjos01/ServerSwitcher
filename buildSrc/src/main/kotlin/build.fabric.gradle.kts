@@ -32,9 +32,9 @@ val archiveName = Utils.getArchiveName(project, rootProject)
 
 val finalShadow = tasks.register<ShadowJar>("finalShadow") {
 
-    val remapJar = tasks["remapJar"]
+    val remapJar = tasks.named<RemapJarTask>("remapJar").get()
     dependsOn(remapJar)
-    from(remapJar)
+    from(zipTree(remapJar.archiveFile))
 
     archiveClassifier.set("")
     archiveBaseName.set(archiveName)

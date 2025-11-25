@@ -86,8 +86,8 @@ public class ServerCommand {
 
         if (server.backend() != null) {
             String token = new JWTBuilder()
-                    .withClaim("username", spl.getGameProfile().getName())
-                    .withClaim("uuid", spl.getGameProfile().getId().toString())
+                    .withClaim("username", spl.getGameProfile().name())
+                    .withClaim("uuid", spl.getGameProfile().id().toString())
                     .withClaim("backend", server.backend())
                     .withClaim("token_id", UUID.randomUUID().toString())
                     .issuedNow()

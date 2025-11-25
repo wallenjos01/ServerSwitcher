@@ -245,7 +245,7 @@ public class ServerSwitcher {
         if(msg.server().equals(config.server())) {
             return;
         }
-        if(server.getPlayerList().getPlayer(msg.profile().getId()) != null) {
+        if(server.getPlayerList().getPlayer(msg.profile().id()) != null) {
             return;
         }
 
@@ -253,7 +253,7 @@ public class ServerSwitcher {
             PipelineContext ctx = PipelineContext.builder()
                     .add(servers.get(msg.server()))
                     .add(new DummyPlayer(server, msg.profile()))
-                    .withContextPlaceholder("display_name", msg.profile().getName())
+                    .withContextPlaceholder("display_name", msg.profile().name())
                     .build();
 
             switch (msg.type()) {
@@ -272,11 +272,13 @@ public class ServerSwitcher {
                             pl.sendSystemMessage(lang.getMessageFor("message.transfer", ((LocaleHolder) pl).getLanguage(), ctx)));
                     break;
                 }
+                default: 
+                    return;
             }
 
             if(msg.type() == PlayerActionMessage.Type.LEAVE) {
-                if(globalPlayerList.players.remove(msg.profile().getId()) != null) {
-                    server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(msg.profile().getId())));
+                if(globalPlayerList.players.remove(msg.profile().id()) != null) {
+                    server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(msg.profile().id())));
                 }
             } else {
 
@@ -289,15 +291,15 @@ public class ServerSwitcher {
                         ClientboundPlayerInfoUpdatePacket.Action.UPDATE_HAT
                 );
 
-                if(msg.type() == PlayerActionMessage.Type.JOIN || !globalPlayerList.players.containsKey(msg.profile().getId())) {
+                if(msg.type() == PlayerActionMessage.Type.JOIN || !globalPlayerList.players.containsKey(msg.profile().id())) {
                     actions.add(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER);
                 }
 
-                globalPlayerList.players.put(msg.profile().getId(), new GlobalPlayerList.Entry(msg.profile(), msg.server()));
+                globalPlayerList.players.put(msg.profile().id(), new GlobalPlayerList.Entry(msg.profile(), msg.server()));
 
                 ClientboundPlayerInfoUpdatePacket pck = new ClientboundPlayerInfoUpdatePacket(actions, List.of());
                 ClientboundPlayerInfoUpdatePacket.Entry ent = new ClientboundPlayerInfoUpdatePacket.Entry(
-                        msg.profile().getId(),
+                        msg.profile().id(),
                         msg.profile(),
                         true,
                         0,
