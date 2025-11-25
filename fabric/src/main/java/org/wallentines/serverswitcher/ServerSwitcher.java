@@ -7,6 +7,8 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -363,6 +365,32 @@ public class ServerSwitcher {
                                 Optional.ofNullable(ss.localInfo).map(ServerInfo::getPrefix).or(() ->
                                         Optional.ofNullable(ss.getLangManager().getMessageFor("text.unknown_prefix", ctx.context()))))),
                 null));
+
+        placeholders.register(new Placeholder<Component, Void>("player_server_name", Component.class, ctx ->
+            ctx.context().getFirst(MinecraftServer.class).flatMap(ServerSwitcher::getOptional).flatMap(ss -> {
+                return ctx.context().getFirst(Player.class).map(Entity::getUUID).or(() -> ctx.context().getFirst(UUID.class)).flatMap(uuid -> {
+                    if(ss.server.getPlayerList().getPlayer(uuid) != null) return Optional.of(ss.localInfo.getName());
+                    GlobalPlayerList.Entry ent = ss.globalPlayerList.players.get(uuid);
+                    ServerInfo info = null;
+                    if(ent == null || (info = ss.servers.get(ent.server())) == null) {
+                        return Optional.empty();
+                    }
+                    return Optional.of(info.getName());
+                }).or(() -> Optional.of(ss.getLangManager().getMessageFor("text.unknown_server", ctx.context())));
+            }), null));
+
+        placeholders.register(new Placeholder<Component, Void>("player_server_prefix", Component.class, ctx ->
+            ctx.context().getFirst(MinecraftServer.class).flatMap(ServerSwitcher::getOptional).flatMap(ss -> {
+                return ctx.context().getFirst(Player.class).map(Entity::getUUID).or(() -> ctx.context().getFirst(UUID.class)).flatMap(uuid -> {
+                    if(ss.server.getPlayerList().getPlayer(uuid) != null) return Optional.of(ss.localInfo.getPrefix());
+                    GlobalPlayerList.Entry ent = ss.globalPlayerList.players.get(uuid);
+                    ServerInfo info;
+                    if(ent == null || (info = ss.servers.get(ent.server())) == null) {
+                        return Optional.empty();
+                    }
+                    return Optional.of(info.getPrefix());
+                }).or(() -> Optional.of(ss.getLangManager().getMessageFor("text.unknown_prefix", ctx.context())));
+            }), null));
 
     }
 
