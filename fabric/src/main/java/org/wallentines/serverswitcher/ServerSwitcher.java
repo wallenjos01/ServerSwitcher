@@ -4,7 +4,7 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -45,8 +45,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class ServerSwitcher {
 
-    public static final ResourceLocation SWITCH_COOKIE = ResourceLocation.tryBuild("serverswitcher", "switch");
-    public static final ResourceLocation BACKEND_COOKIE = ResourceLocation.tryBuild("serverswitcher", "backend");
+    public static final Identifier SWITCH_COOKIE = Identifier.tryBuild("serverswitcher", "switch");
+    public static final Identifier BACKEND_COOKIE = Identifier.tryBuild("serverswitcher", "backend");
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ServerSwitcher.class);
 
@@ -317,7 +317,7 @@ public class ServerSwitcher {
         }
     }
 
-    private static final ResourceLocation STATE_OBJECT = ResourceLocation.tryBuild("serverswitcher", "state");
+    private static final Identifier STATE_OBJECT = Identifier.tryBuild("serverswitcher", "state");
     public static ServerSwitcher getInstance(MinecraftServer server) {
         return ServerStateObjects.getStateObject(server, ServerSwitcher.class, STATE_OBJECT).orElseThrow();
     }

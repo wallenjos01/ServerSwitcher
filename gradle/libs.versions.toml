@@ -2,13 +2,13 @@
 junit = "5.10.2"
 slf4j = "2.0.16"
 jbr-anno = "24.0.1"
-midnightcfg = "3.5.1"
+midnightcfg = "3.5.2"
 jwtutil = "0.1.0"
-pseudonym = "0.4.3"
+pseudonym = "0.4.4"
 smi = "0.3.0"
-databridge = "0.9.0"
+databridge = "0.10.1"
 cookies = "0.1.2"
-invmenu = "0.2.2"
+invmenu = "0.2.3"
 
 [libraries]
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref="jbr-anno" }
